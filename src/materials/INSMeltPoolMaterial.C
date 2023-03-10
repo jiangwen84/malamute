@@ -40,7 +40,8 @@ INSMeltPoolMaterial::INSMeltPoolMaterial(const InputParameters & parameters)
     _rho(getADMaterialProperty<Real>("rho")),
     _rho_l(getParam<Real>("rho_l")),
     _rho_g(getParam<Real>("rho_g")),
-    _melt_pool_mass_rate(getADMaterialProperty<Real>("melt_pool_mass_rate"))
+    _melt_pool_mass_rate(getADMaterialProperty<Real>("melt_pool_mass_rate")),
+    _saturated_vapor_pressure(getADMaterialProperty<Real>("_saturated_vapor_pressure"))
 {
 }
 
@@ -69,9 +70,8 @@ INSMeltPoolMaterial::computeQpProperties()
 
   _melt_pool_momentum_source[_qp] = -thermalcapillary_term + surface_tension_term + darcy_term;
 
-  // Phase change
-  _melt_pool_momentum_source[_qp] -= _melt_pool_mass_rate[_qp] * _delta_function[_qp] * _rho[_qp] *
-                                     (1.0 / _rho_g - 1.0 / _rho_l) * _velocity[_qp];
+  // Recoil Pressure
+  _melt_pool_momentum_source[_qp] -= 0.55 * _saturated_vapor_pressure[_qp] * _grad_c[_qp];
 
   _momentum_strong_residual[_qp] -= _melt_pool_momentum_source[_qp];
 }

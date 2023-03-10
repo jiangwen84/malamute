@@ -30,6 +30,9 @@ protected:
   /// Mass rate
   ADMaterialProperty<Real> & _melt_pool_mass_rate;
 
+  /// Saturated vapor pressure
+  ADMaterialProperty<Real> & _saturated_vapor_pressure;
+
   /// Atomic weight
   const Real & _m;
 

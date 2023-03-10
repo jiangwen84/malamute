@@ -65,4 +65,7 @@ protected:
 
   /// Mass transfer rate
   const ADMaterialProperty<Real> & _melt_pool_mass_rate;
+
+  /// Saturated vapor pressure
+  const ADMaterialProperty<Real> & _saturated_vapor_pressure;
 };
