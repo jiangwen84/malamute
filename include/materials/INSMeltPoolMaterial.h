@@ -27,11 +27,17 @@ protected:
   /// Gradient of the level set variable
   const ADVectorVariableValue & _grad_c;
 
+  /// Gradient of the old level set variable
+  const VectorVariableValue & _grad_c_old;
+
   /// Temperature variable
   const ADVariableValue & _temp;
 
   /// Gradient of temperature variable
   const ADVariableGradient & _grad_temp;
+
+  /// Gradient of old temperature variable
+  const VariableGradient & _grad_temp_old;
 
   /// Curvature variable
   const ADVariableValue & _curvature;
@@ -68,4 +74,7 @@ protected:
 
   /// Saturated vapor pressure
   const ADMaterialProperty<Real> & _saturated_vapor_pressure;
+
+  /// Liquid mass fraction
+  const ADMaterialProperty<Real> & _f_l;
 };

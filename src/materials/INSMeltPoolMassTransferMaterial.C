@@ -30,7 +30,7 @@ INSMeltPoolMassTransferMaterial::INSMeltPoolMassTransferMaterial(const InputPara
   : ADMaterial(parameters),
     _temp(adCoupledValue("temperature")),
     _melt_pool_mass_rate(declareADProperty<Real>("melt_pool_mass_rate")),
-    _saturated_vapor_pressure(declareADProperty<Real>("_saturated_vapor_pressure")),
+    _saturated_vapor_pressure(declareADProperty<Real>("saturated_vapor_pressure")),
     _m(getParam<Real>("atomic_weight")),
     _boltzmann(getParam<Real>("Boltzmann_constant")),
     _beta_r(getParam<Real>("retrodiffusion_coefficient")),

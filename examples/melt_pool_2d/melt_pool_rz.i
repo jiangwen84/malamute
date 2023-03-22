@@ -55,8 +55,6 @@
   [temp]
     initial_condition = 300
   []
-  [curvature]
-  []
   [grad_ls]
     family = LAGRANGE_VEC
   []
@@ -64,6 +62,8 @@
     family = LAGRANGE_VEC
   []
   [p]
+  []
+  [curvature]
   []
 []
 
@@ -168,7 +168,7 @@
   [heat_source]
     type = MeltPoolHeatSource
     variable = temp
-    laser_power = 200
+    laser_power = 100
     effective_beam_radius = 0.25e-3
     absorption_coefficient = 0.27
     heat_transfer_coefficient = 100
@@ -176,7 +176,7 @@
     material_emissivity = 0.59
     ambient_temperature = 300
     laser_location_x = '0.005'
-    laser_location_y = '0.005-1e-3*t'
+    laser_location_y = '0.005' #'0.005-1e-3*t'
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
@@ -268,12 +268,12 @@
     alpha = .1
     temperature = temp
     curvature = curvature
-    surface_tension = 1.169 #1.169
-    thermal_capillary = -4.3e-4 #-4.3e-4
+    surface_tension = 1.169
+    thermal_capillary = -4.3e-4
     rho_l = 8000
     rho_g = 1.184
     outputs = all
-    output_properties = melt_pool_mass_rate
+    output_properties = 'melt_pool_mass_rate saturated_vapor_pressure'
     cp_name = specific_heat
     k_name = thermal_conductivity
   []
@@ -283,8 +283,8 @@
     Boltzmann_constant = 1.38064852e-23
     vaporization_latent_heat = 6.1e6
     atomic_weight = 97.43e-27
-    vaporization_temperature = 3134
-    reference_pressure = 1.01e5
+    vaporization_temperature = 3134 #3134
+    reference_pressure = 1.01e5 #1.01e5
     outputs = all
   []
   [fluid]
@@ -302,7 +302,7 @@
 [MultiApps]
   [reinit]
     type = LevelSetReinitializationMultiApp
-    input_files = 'reinit.i'
+    input_files = 'reinit_rz.i'
     execute_on = TIMESTEP_END
   []
 []
@@ -344,44 +344,22 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 5e-3
+  dt = 1e-3
   nl_abs_tol = 1e-7
   num_steps = 1000
-  line_search = 'l2'
-
+  nl_max_its = 12
+  l_max_its = 100
+  line_search = 'none'
   petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_shift_amount -pc_factor_mat_solver_package -ksp_type'
-  petsc_options_value = 'lu NONZERO 1e-10 superlu_dist preonly'
-
-  # petsc_options_iname = '-pc_type -sub_pc_factor_levels -ksp_gmres_restart'
-  # petsc_options_value = 'asm      5                     200'
-
-  # petsc_options_iname = '-pc_type -pc_hypre_type'
-  # petsc_options_value = 'hypre boomeramg'
-  # petsc_options = '-snes_converged_reason -ksp_converged_reason -options_left -ksp_monitor_singular_value'
-
-  # petsc_options = '-snes_converged_reason -ksp_converged_reason -options_left'
-  # petsc_options_iname = '-ksp_gmres_restart -pc_factor_shift_type -pc_factor_shift_amount -pc_type'
-  # petsc_options_value = '100                NONZERO               1e-10                   ilu'
-
-  #petsc_options_iname = '-pc_type -ksp_grmres_restart -sub_pc_type -pc_asm_overlap'
-  # petsc_options_value = '  asm         101                     lu        3'
-
-  # petsc_options_iname = '-ksp_max_it -ksp_gmres_restart -pc_type -snes_max_funcs -sub_pc_factor_levels'
-  # petsc_options_value = ' 100         100                asm      1000000         6'
-
-  nl_forced_its = 3
-  nl_max_its = 15
-  l_max_its = 20
-
+  petsc_options_value = 'lu NONZERO 1e-5 superlu_dist preonly'
+  #petsc_options = '-snes_converged_reason -ksp_converged_reason -options_left -ksp_monitor_singular_value'
+  # petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -snes_max_it -sub_pc_factor_shift_type -pc_asm_overlap -snes_atol -snes_rtol '
+  # petsc_options_value = 'gmres asm lu 100 NONZERO 2 1E-14 1E-12'
   nl_div_tol = 1e20
   automatic_scaling = true
 []
 
-[Debug]
-  # show_var_residual = 'temp curvature p'
-  show_var_residual_norms = true
-[]
-
 [Outputs]
+  file_base = 'low_ref_pressure'
   exodus = true
 []
