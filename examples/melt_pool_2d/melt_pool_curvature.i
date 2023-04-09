@@ -17,6 +17,7 @@
     nodes = '0'
     input = gen
   []
+  #uniform_refine = 3
 []
 
 [Adaptivity]
@@ -137,6 +138,7 @@
 
   petsc_options_iname = '-pc_type -sub_pc_factor_levels -ksp_gmres_restart'
   petsc_options_value = 'asm      6                     200'
+  petsc_options = '-snes_converged_reason -ksp_converged_reason -options_left -ksp_monitor_singular_value'
 
   # petsc_options_iname = '-pc_type -pc_hypre_type'
   # petsc_options_value = 'hypre boomeramg'

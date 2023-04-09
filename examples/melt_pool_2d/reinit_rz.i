@@ -1,31 +1,34 @@
-[Mesh/gen]
-  type = GeneratedMeshGenerator
-  dim = 2
-  xmin = 0
-  xmax = 0.01
-  ymin = 0
-  ymax = 0.01
-  nx = 50
-  ny = 50
-  elem_type = QUAD4
+[Mesh]
+  [gen]
+    type = GeneratedMeshGenerator
+    dim = 2
+    xmin = 0
+    xmax = 0.003
+    ymin = 0
+    ymax = 0.006
+    nx = 100
+    ny = 200
+    elem_type = QUAD4
+  []
+  coord_type = RZ
 []
 
-[Adaptivity]
-  steps = 3
-  marker = box
-  max_h_level = 3
-  initial_steps = 3
-  stop_time = 1.0e-10
-  [Markers]
-    [box]
-      bottom_left = '0.000 0.004 0'
-      inside = refine
-      top_right = '0.01 0.006 0'
-      outside = do_nothing
-      type = BoxMarker
-    []
-  []
-[]
+# [Adaptivity]
+#   steps = 3
+#   marker = box
+#   max_h_level = 3
+#   initial_steps = 3
+#   stop_time = 1.0e-10
+#   [Markers]
+#     [box]
+#       bottom_left = '0.000 0.001 0'
+#       inside = refine
+#       top_right = '0.005 0.007 0'
+#       outside = do_nothing
+#       type = BoxMarker
+#     []
+#   []
+# []
 
 [Variables]
   [ls]

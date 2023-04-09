@@ -176,7 +176,7 @@
     material_emissivity = 0.59
     ambient_temperature = 300
     laser_location_x = '0.005'
-    laser_location_y = '0.005-1e-3*t'
+    laser_location_y = '0.005-1e-2*t'
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
@@ -284,7 +284,7 @@
     vaporization_latent_heat = 6.1e6
     atomic_weight = 97.43e-27
     vaporization_temperature = 3134
-    reference_pressure = 1.01e5
+    reference_pressure = 1.01e6
     outputs = all
   []
   [fluid]

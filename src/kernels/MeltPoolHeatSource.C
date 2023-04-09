@@ -67,7 +67,8 @@ MeltPoolHeatSource::precomputeQpResidual()
                                  _laser_location_y.value(_t, p),
                                  _laser_location_z.value(_t, p));
 
-  ADReal r = (_ad_q_point[_qp] - laser_location).norm();
+  // ADReal r = (_ad_q_point[_qp] - laser_location).norm();
+  ADReal r = std::abs(_ad_q_point[_qp](0) - laser_location(0));
 
   ADReal laser_source = 2 * _power_function.value(_t, p) * _alpha /
                         (libMesh::pi * Utility::pow<2>(_Rb)) *
