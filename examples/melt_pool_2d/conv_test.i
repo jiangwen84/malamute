@@ -3,90 +3,44 @@
     type = GeneratedMeshGenerator
     dim = 2
     xmin = 0
-    xmax = 0.0015
+    xmax = 0.003
     ymin = 0
-    ymax = 0.003
-    nx = 20
-    ny = 40
+    ymax = 0.006
+    nx = 100
+    ny = 200
     elem_type = QUAD4
   []
-  uniform_refine = 2
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0.003'
+    coord = '0.0 0.006'
     input = gen
   []
   coord_type = RZ
 []
 
-[Problem]
-  type = LevelSetProblem
-[]
+# [Adaptivity]
+#   steps = 3
+#   marker = box
+#   max_h_level = 3
+#   initial_steps = 3
+#   stop_time = 1.0e-10
+#   [Markers]
+#     [box]
+#       bottom_left = '0.000 0.001 0'
+#       inside = refine
+#       top_right = '0.005 0.007 0'
+#       outside = do_nothing
+#       type = BoxMarker
+#     []
+#   []
+# []
 
-[Adaptivity]
-  steps = 3
-  marker = combo
-  max_h_level = 3
-  #initial_steps = 3
-  #stop_time = 1.0e-10
-  #[Markers]
-  # [box]
-  #   bottom_left = '0.000 0.001 0'
-  #   inside = refine
-  #   top_right = '0.005 0.007 0'
-  #   outside = do_nothing
-  #   type = BoxMarker
-  # []
-  #[]
-  [Indicators]
-    [ind_ls]
-      type = GradientJumpIndicator
-      variable = ls
-    []
-    [ind_vel_x]
-      type = GradientJumpIndicator
-      variable = vel_x
-    []
-    [ind_vel_y]
-      type = GradientJumpIndicator
-      variable = vel_y
-    []
-  []
-  [Markers]
-    [error_ls]
-      type = ErrorFractionMarker
-      refine = 0.95
-      coarsen = 0.3
-      indicator = ind_ls
-    []
-    [error_vel_x]
-      type = ErrorFractionMarker
-      refine = 0.95
-      coarsen = 0.3
-      indicator = ind_vel_x
-    []
-    [error_vel_y]
-      type = ErrorFractionMarker
-      refine = 0.95
-      coarsen = 0.3
-      indicator = ind_vel_y
-    []
-    [error_temp]
-      type = ValueRangeMarker
-      lower_bound = 1000
-      upper_bound = 2000
-      buffer_size = 0.1
-      variable = temp
-      third_state = DO_NOTHING
-    []
-    [combo]
-      type = ComboMarker
-      # markers = 'error_vel_y error_vel_x  error_ls error_temp'
-      markers = 'error_ls error_temp'
-    []
-  []
-[]
+# [AuxVariables]
+#   [curvature]
+#     initial_condition = 0
+#   []
+# []
 
 [ICs]
   [ls_ic]
@@ -99,28 +53,6 @@
     x_value = 1e-10
     y_value = 1e-10
     variable = velocity
-  []
-[]
-
-[AuxVariables]
-  [vel_x]
-  []
-  [vel_y]
-  []
-[]
-
-[AuxKernels]
-  [vel_x]
-    type = VectorVariableComponentAux
-    component = x
-    vector_variable = velocity
-    variable = vel_x
-  []
-  [vel_y]
-    type = VectorVariableComponentAux
-    component = y
-    vector_variable = velocity
-    variable = vel_y
   []
 []
 
@@ -145,7 +77,7 @@
 [Functions/ls_exact]
   type = LevelSetOlssonPlane
   epsilon = 0.00004
-  point = '0.0015 0.0015 0'
+  point = '0.003 0.003 0'
   normal = '0 1 0'
 []
 
@@ -251,7 +183,7 @@
     material_emissivity = 0.59
     ambient_temperature = 300
     laser_location_x = '0.00'
-    laser_location_y = '0.0015-1e-3*t' #'0.005-1e-3*t'
+    laser_location_y = '0.003-1e-3*t' #'0.005-1e-3*t'
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
@@ -375,46 +307,39 @@
   []
 []
 
-[MultiApps]
-  [reinit]
-    type = LevelSetReinitializationMultiApp
-    input_files = 'reinit_rz.i'
-    execute_on = TIMESTEP_END
-  []
-[]
+# [MultiApps]
+#   [reinit]
+#     type = LevelSetReinitializationMultiApp
+#     input_files = 'reinit_rz.i'
+#     execute_on = TIMESTEP_END
+#   []
+# []
 
-[Transfers]
-  [marker_to_sub]
-    type = LevelSetMeshRefinementTransfer
-    to_multi_app = reinit
-    source_variable = combo
-    variable = combo
-    check_multiapp_execute_on = false
-  []
-  [to_sub]
-    type = MultiAppCopyTransfer
-    source_variable = ls
-    variable = ls
-    to_multi_app = reinit
-    execute_on = 'timestep_end'
-  []
+# [Transfers]
+#   [to_sub]
+#     type = MultiAppCopyTransfer
+#     source_variable = ls
+#     variable = ls
+#     to_multi_app = reinit
+#     execute_on = 'timestep_end'
+#   []
 
-  [to_sub_init]
-    type = MultiAppCopyTransfer
-    source_variable = ls
-    variable = ls_0
-    to_multi_app = reinit
-    execute_on = 'timestep_end'
-  []
+#   [to_sub_init]
+#     type = MultiAppCopyTransfer
+#     source_variable = ls
+#     variable = ls_0
+#     to_multi_app = reinit
+#     execute_on = 'timestep_end'
+#   []
 
-  [from_sub]
-    type = MultiAppCopyTransfer
-    source_variable = ls
-    variable = ls
-    from_multi_app = reinit
-    execute_on = 'timestep_end'
-  []
-[]
+#   [from_sub]
+#     type = MultiAppCopyTransfer
+#     source_variable = ls
+#     variable = ls
+#     from_multi_app = reinit
+#     execute_on = 'timestep_end'
+#   []
+# []
 
 [Preconditioning]
   [SMP]
@@ -433,21 +358,18 @@
   nl_max_its = 12
   l_max_its = 100
   line_search = 'none'
-  petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_shift_amount -pc_factor_mat_solver_package -ksp_type'
-  petsc_options_value = 'lu NONZERO 1e-5 superlu_dist preonly'
+  #petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_shift_amount -pc_factor_mat_solver_package -ksp_type'
+  #petsc_options_value = 'lu NONZERO 1e-5 superlu_dist preonly'
   #petsc_options = '-snes_converged_reason -ksp_converged_reason -options_left -ksp_monitor_singular_value'
 
-  #petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -snes_max_it -sub_pc_factor_shift_type -pc_asm_overlap -pc_factor_shift_amount -sub_pc_factor_levels -sub_ksp_type'
-  #petsc_options_value = 'gmres asm lu 100 NONZERO 3 1e-10 1 preonly'
-
-  # petsc_options_iname = '-ksp_max_it -ksp_gmres_restart -pc_type -snes_max_funcs -sub_pc_factor_levels'
-  # petsc_options_value = '100       100          asm      1000000         1'
+  petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -snes_max_it -sub_pc_factor_shift_type -pc_asm_overlap -pc_factor_shift_amount'
+  petsc_options_value = 'gmres asm lu 100 NONZERO 2 1e-6'
 
   # petsc_options_iname = '-pc_type -pc_hypre_type'
   # petsc_options_value = 'hypre boomeramg'
   # #petsc_options = '-snes_converged_reason -ksp_converged_reason -options_left -ksp_monitor_singular_value'
 
-  #nl_div_tol = 1e20
+  nl_div_tol = 1e20
   automatic_scaling = true
 []
 

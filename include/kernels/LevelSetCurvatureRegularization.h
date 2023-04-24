@@ -28,6 +28,8 @@ protected:
   /// Gradient of regularized gradient of level set
   const ADVectorVariableValue & _grad_c;
 
+  const VectorVariableValue & _grad_c_old;
+
   /// regulization parameter
   const Real _varepsilon;
 };

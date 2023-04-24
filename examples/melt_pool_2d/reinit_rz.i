@@ -3,14 +3,15 @@
     type = GeneratedMeshGenerator
     dim = 2
     xmin = 0
-    xmax = 0.003
+    xmax = 0.00015
     ymin = 0
-    ymax = 0.006
-    nx = 100
-    ny = 200
+    ymax = 0.003
+    nx = 20
+    ny = 40
     elem_type = QUAD4
   []
   coord_type = RZ
+  uniform_refine = 2
 []
 
 # [Adaptivity]
@@ -42,6 +43,10 @@
 [AuxVariables]
   [ls_0]
     order = FIRST
+  []
+  [combo]
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 
@@ -80,7 +85,8 @@
   solve_type = NEWTON
   start_time = 0
   num_steps = 10
-  nl_abs_tol = 1e-14
+  nl_abs_tol = 1e-10
+  nl_forced_its = 2
   nl_max_its = 10
   line_search = none
   petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'

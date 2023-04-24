@@ -33,6 +33,7 @@ INSMeltPoolMaterial::INSMeltPoolMaterial(const InputParameters & parameters)
     _grad_temp(adCoupledGradient("temperature")),
     _grad_temp_old(coupledGradientOld("temperature")),
     _curvature(adCoupledValue("curvature")),
+    _curvature_old(coupledValueOld("curvature")),
     _permeability(getADMaterialProperty<Real>("permeability")),
     _sigma(getParam<Real>("surface_tension")),
     _sigmaT(getParam<Real>("thermal_capillary")),
@@ -79,6 +80,7 @@ INSMeltPoolMaterial::computeQpProperties()
     surface_tension_term =
         _sigma * _curvature[_qp] *
         (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
+
     thermalcapillary_term = -proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp];
 
     _melt_pool_momentum_source[_qp] += -thermalcapillary_term + surface_tension_term;

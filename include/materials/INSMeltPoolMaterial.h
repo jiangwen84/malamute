@@ -42,6 +42,9 @@ protected:
   /// Curvature variable
   const ADVariableValue & _curvature;
 
+  /// Curvature variable
+  const VariableValue & _curvature_old;
+
   /// Permeability in Darcy term
   const ADMaterialProperty<Real> & _permeability;
 

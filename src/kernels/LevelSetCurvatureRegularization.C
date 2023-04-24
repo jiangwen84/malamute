@@ -26,6 +26,7 @@ LevelSetCurvatureRegularization::validParams()
 LevelSetCurvatureRegularization::LevelSetCurvatureRegularization(const InputParameters & parameters)
   : ADKernel(parameters),
     _grad_c(adCoupledVectorValue("level_set_regularized_gradient")),
+    _grad_c_old(coupledVectorValueOld("level_set_regularized_gradient")),
     _varepsilon(getParam<Real>("varepsilon"))
 {
 }
@@ -33,15 +34,15 @@ LevelSetCurvatureRegularization::LevelSetCurvatureRegularization(const InputPara
 ADReal
 LevelSetCurvatureRegularization::computeQpResidual()
 {
-  // if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > libMesh::TOLERANCE)
-  // {
-  //   ADRealVectorValue n = (_grad_c[_qp]) / _grad_c[_qp].norm();
-  //   return _test[_i][_qp] * _u[_qp] - _grad_test[_i][_qp] * (n - _varepsilon * _grad_u[_qp]);
-  // }
-  // else
-  //   return _test[_i][_qp] * _u[_qp];
+  if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > libMesh::TOLERANCE)
+  {
+    ADRealVectorValue n = (_grad_c[_qp]) / _grad_c[_qp].norm();
+    return _test[_i][_qp] * _u[_qp] - _grad_test[_i][_qp] * (n - _varepsilon * _grad_u[_qp]);
+  }
+  else
+    return _test[_i][_qp] * _u[_qp];
 
-  ADReal s = (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm();
-  ADRealVectorValue n = _grad_c[_qp] / s;
-  return _test[_i][_qp] * _u[_qp] - _grad_test[_i][_qp] * (n - _varepsilon * _grad_u[_qp]);
+  // ADReal s = (_grad_c_old[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm();
+  // ADRealVectorValue n = _grad_c_old[_qp] / s;
+  // return _test[_i][_qp] * _u[_qp] - _grad_test[_i][_qp] * (n - _varepsilon * _grad_u[_qp]);
 }
