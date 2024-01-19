@@ -3,7 +3,7 @@
 /*                                                                          */
 /* MALAMUTE: MOOSE Application Library for Advanced Manufacturing UTilitiEs */
 /*                                                                          */
-/*           Copyright 2021 - 2024, Battelle Energy Alliance, LLC           */
+/*           Copyright 2021 - 2023, Battelle Energy Alliance, LLC           */
 /*                           ALL RIGHTS RESERVED                            */
 /****************************************************************************/
 
@@ -13,22 +13,18 @@
 /**
  * This class computes delta function (derivative of the Heaviside function) given by a level set
  */
-class LevelSetDeltaFunction : public ADMaterial
+class LevelSetOlssonDeltaFunction : public ADMaterial
 {
 public:
   static InputParameters validParams();
 
-  LevelSetDeltaFunction(const InputParameters & parameters);
+  LevelSetOlssonDeltaFunction(const InputParameters & parameters);
 
 protected:
-  void initQpStatefulProperties() override;
-
   void computeQpProperties() override;
 
-  /// Level set variable
-  const ADVariableValue & _c;
-
-  const Real _epsilon;
+  /// Gradient of the level set variable
+  const ADVectorVariableValue & _grad_c;
 
   /// Delta function
   ADMaterialProperty<Real> & _delta_function;

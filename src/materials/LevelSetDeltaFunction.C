@@ -16,21 +16,32 @@ LevelSetDeltaFunction::validParams()
 {
   InputParameters params = ADMaterial::validParams();
   params.addClassDescription("Computes delta function given by a level set.");
-  params.addRequiredCoupledVar("level_set_gradient",
-                               "Regularized gradient of the level set variable");
+  params.addRequiredCoupledVar("level_set", "Level set variable");
+  params.addRequiredParam<Real>("epsilon", "epsilon is half of transition thinkness.");
   return params;
 }
 
 LevelSetDeltaFunction::LevelSetDeltaFunction(const InputParameters & parameters)
   : ADMaterial(parameters),
-    _grad_c(adCoupledVectorValue("level_set_gradient")),
+    _c(adCoupledValue("level_set")),
+    _epsilon(getParam<Real>("epsilon")),
     _delta_function(declareADProperty<Real>("delta_function"))
 {
 }
 
 void
+LevelSetDeltaFunction::initQpStatefulProperties()
+{
+  _delta_function[_qp] = 0.0;
+};
+
+void
 LevelSetDeltaFunction::computeQpProperties()
 {
-  _delta_function[_qp] =
-      (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm();
+  Real c = MetaPhysicL::raw_value(_c[_qp]);
+  if (c <= _epsilon && c >= -_epsilon)
+    _delta_function[_qp] =
+        0.5 / _epsilon + 0.5 / _epsilon * std::cos(libMesh::pi * _c[_qp] / _epsilon);
+  else
+    _delta_function[_qp] = 0.0;
 }

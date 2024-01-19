@@ -22,10 +22,14 @@ public:
   LevelSetHeavisideFunction(const InputParameters & parameters);
 
 protected:
+  void initQpStatefulProperties() override;
+
   void computeQpProperties() override;
 
   /// Level set variable
   const ADVariableValue & _c;
+
+  const Real _epsilon;
 
   /// Heaviside function
   ADMaterialProperty<Real> & _heaviside_function;
