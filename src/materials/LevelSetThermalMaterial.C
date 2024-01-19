@@ -31,7 +31,7 @@ LevelSetThermalMaterial::validParams()
 LevelSetThermalMaterial::LevelSetThermalMaterial(const InputParameters & parameters)
   : ADMaterial(parameters),
     _temp(adCoupledValue("temperature")),
-    _heaviside_function(getADMaterialProperty<Real>("heaviside_function")),
+    _heaviside_function(getMaterialPropertyOld<Real>("heaviside_function")),
     _h(declareADProperty<Real>("enthalpy")),
     _k(declareADProperty<Real>("thermal_conductivity")),
     _cp(declareADProperty<Real>("specific_heat")),

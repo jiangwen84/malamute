@@ -32,7 +32,7 @@ LevelSetHeavisideFunction::LevelSetHeavisideFunction(const InputParameters & par
 void
 LevelSetHeavisideFunction::initQpStatefulProperties()
 {
-  _delta_function[_qp] = 0.0;
+  _heaviside_function[_qp] = 0.0;
 };
 
 void

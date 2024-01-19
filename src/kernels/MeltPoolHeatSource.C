@@ -39,7 +39,7 @@ MeltPoolHeatSource::validParams()
 
 MeltPoolHeatSource::MeltPoolHeatSource(const InputParameters & parameters)
   : ADKernelValue(parameters),
-    _delta_function(getADMaterialProperty<Real>("delta_function")),
+    _delta_function(getMaterialPropertyOld<Real>("delta_function")),
     _power(getFunction("laser_power")),
     _alpha(getParam<Real>("absorption_coefficient")),
     _Rb(getParam<Real>("effective_beam_radius")),

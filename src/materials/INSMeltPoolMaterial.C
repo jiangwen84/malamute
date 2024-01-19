@@ -27,15 +27,15 @@ INSMeltPoolMaterial::validParams()
 
 INSMeltPoolMaterial::INSMeltPoolMaterial(const InputParameters & parameters)
   : INSADStabilized3Eqn(parameters),
-    _grad_c(adCoupledVectorValue("level_set_gradient")),
+    _grad_c(coupledVectorValueOld("level_set_gradient")),
     _temp(adCoupledValue("temperature")),
     _grad_temp(adCoupledGradient("temperature")),
-    _curvature(adCoupledValue("curvature")),
+    _curvature(coupledValueOld("curvature")),
     _permeability(getADMaterialProperty<Real>("permeability")),
     _sigma(getParam<Real>("surface_tension")),
     _sigmaT(getParam<Real>("thermal_capillary")),
-    _delta_function(getADMaterialProperty<Real>("delta_function")),
-    _heaviside_function(getADMaterialProperty<Real>("heaviside_function")),
+    _delta_function(getMaterialPropertyOld<Real>("delta_function")),
+    _heaviside_function(getMaterialPropertyOld<Real>("heaviside_function")),
     _melt_pool_momentum_source(declareADProperty<RealVectorValue>("melt_pool_momentum_source")),
     _rho(getADMaterialProperty<Real>("rho")),
     _rho_l(getParam<Real>("rho_l")),
@@ -59,11 +59,11 @@ INSMeltPoolMaterial::computeQpProperties()
 
   _melt_pool_momentum_source[_qp] = darcy_term;
 
-  ADRealVectorValue surface_tension_term = ADRealVectorValue(0.0);
+  RealVectorValue surface_tension_term = RealVectorValue(0.0);
   ADRealVectorValue thermalcapillary_term = ADRealVectorValue(0.0);
   RankTwoTensor iden(RankTwoTensor::initIdentity);
   ADRankTwoTensor proj;
-  ADRealVectorValue normal = ADRealVectorValue(0.0);
+  RealVectorValue normal = RealVectorValue(0.0);
 
   if (MetaPhysicL::raw_value(_f_l[_qp]) > libMesh::TOLERANCE &&
       MetaPhysicL::raw_value(_delta_function[_qp]) > libMesh::TOLERANCE)

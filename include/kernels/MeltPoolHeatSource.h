@@ -25,7 +25,7 @@ protected:
   ADReal precomputeQpResidual() override;
 
   /// Delta function
-  const ADMaterialProperty<Real> & _delta_function;
+  const MaterialProperty<Real> & _delta_function;
 
   /// Laser power
   const Function & _power;

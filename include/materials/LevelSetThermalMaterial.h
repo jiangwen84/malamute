@@ -28,7 +28,7 @@ protected:
   const ADVariableValue & _temp;
 
   /// Heavisde function
-  const ADMaterialProperty<Real> & _heaviside_function;
+  const MaterialProperty<Real> & _heaviside_function;
 
   /// Enthalpy
   ADMaterialProperty<Real> & _h;
