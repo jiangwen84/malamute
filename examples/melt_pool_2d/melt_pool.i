@@ -55,9 +55,9 @@
   [temp]
     initial_condition = 300
   []
-  [grad_ls]
-    family = LAGRANGE_VEC
-  []
+  # [grad_ls]
+  #   family = LAGRANGE_VEC
+  # []
   [velocity]
     family = LAGRANGE_VEC
   []
@@ -68,6 +68,7 @@
 []
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
@@ -76,6 +77,14 @@
     normal = '0 1 0'
   []
 =======
+=======
+# [AuxVariables]
+#   [curvature]
+#     initial_condition = 0
+#   []
+# []
+
+>>>>>>> 4ae676b (without using regularization for level set gradient)
 [Functions/ls_exact]
   type = LevelSetOlssonPlane
   epsilon = 0.00004
@@ -108,16 +117,17 @@
 [Kernels]
   [curvature]
     type = LevelSetCurvatureRegularization
-    level_set_regularized_gradient = grad_ls
+    #level_set_regularized_gradient = grad_ls
+    level_set = ls
     variable = curvature
-    varepsilon = 2e-4
+    varepsilon = 4e-4
   []
 
-  [grad_ls]
-    type = VariableGradientRegularization
-    regularized_var = ls
-    variable = grad_ls
-  []
+  # [grad_ls]
+  #   type = VariableGradientRegularization
+  #   regularized_var = ls
+  #   variable = grad_ls
+  # []
 
   [level_set_time]
     type = ADTimeDerivative
@@ -178,15 +188,15 @@
   [heat_source]
     type = MeltPoolHeatSource
     variable = temp
-    laser_power = 100
+    laser_power = 250
     effective_beam_radius = 0.25e-3
     absorption_coefficient = 0.27
     heat_transfer_coefficient = 100
     StefanBoltzmann_constant = 5.67e-8
     material_emissivity = 0.59
     ambient_temperature = 300
-    laser_location_x = '0.005 + 6e-3*t'
-    laser_location_y = '0.005'
+    laser_location_x = '0.005'
+    laser_location_y = '0.005-1e-3*t'
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
@@ -245,9 +255,9 @@
     c_g = 300
     c_s = 500
     c_l = 500
-    k_g = 0.017
-    k_s = 31.8724
-    k_l = 209.3
+    k_g = 10
+    k_s = 40
+    k_l = 40
     solidus_temperature = 1648
     latent_heat = 2.5e5
     outputs = all
@@ -263,7 +273,8 @@
   []
   [delta]
     type = LevelSetDeltaFunction
-    level_set_gradient = grad_ls
+    #level_set_gradient = grad_ls
+    level_set = ls
     outputs = all
   []
   [heaviside]
@@ -273,14 +284,15 @@
   []
   [ins_melt_pool_mat]
     type = INSMeltPoolMaterial
-    level_set_gradient = grad_ls
+    #level_set_gradient = grad_ls
+    level_set = ls
     velocity = velocity
     pressure = p
     alpha = .1
     temperature = temp
     curvature = curvature
-    surface_tension = 1.169
-    thermal_capillary = -4.3e-4
+    surface_tension = 0.15 #1.169
+    thermal_capillary = 0 #-4.3e-4
     rho_l = 8000
     rho_g = 1.184
     outputs = all
@@ -295,7 +307,7 @@
     vaporization_latent_heat = 6.1e6
     atomic_weight = 97.43e-27
     vaporization_temperature = 3134
-    reference_pressure = 1.01e5
+    reference_pressure = 1.01e5 #1.01e5
     outputs = all
   []
   [fluid]
@@ -303,8 +315,8 @@
     rho_g = 1.184
     rho_s = 8000
     rho_l = 8000
-    mu_g = 1.81e-5
-    mu_l = 0.1
+    mu_g = 1e-5
+    mu_l = 5e-3
     permeability_constant = 1e-8
     outputs = all
   []
@@ -407,13 +419,20 @@
   dt = 1e-3
   nl_abs_tol = 1e-7
   num_steps = 1000
+  nl_max_its = 10
+  nl_forced_its = 2
   line_search = 'none'
   petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
   petsc_options_value = 'lu NONZERO superlu_dist preonly'
+<<<<<<< HEAD
   # petsc_options_iname = '-pc_type  -sub_pc_type -pc_factor_shift_type -sub_pc_factor_shift_amount'
   # petsc_options_value = 'asm             lu NONZERO 1e-10'
   l_max_its = 50
   nl_max_its = 10
+=======
+  # petsc_options_iname = '-pc_type -pc_factor_shift_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  # petsc_options_value = ' asm      NONZERO lu           2               31                 preonly'
+>>>>>>> deab24a (without using regularization for level set gradient)
   nl_div_tol = 1e20
   automatic_scaling = true
   off_diagonals_in_auto_scaling = true

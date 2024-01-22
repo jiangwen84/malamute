@@ -66,25 +66,27 @@
   type = LevelSetReinitializationProblem
 []
 
-[UserObjects]
-  [arnold]
-    type = LevelSetOlssonTerminator
-    tol = 0.5
-    min_steps = 5
-  []
-[]
+# [UserObjects]
+#   [arnold]
+#     type = LevelSetOlssonTerminator
+#     tol = 0.5
+#     min_steps = 5
+#   []
+# []
 
 [Executioner]
   type = Transient
   solve_type = NEWTON
   start_time = 0
-  num_steps = 10
+  num_steps = 20
   nl_abs_tol = 1e-14
   nl_max_its = 10
   line_search = none
-  petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
-  petsc_options_value = 'lu NONZERO superlu_dist preonly'
-  dt = 0.00001
+  # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
+  # petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  petsc_options_value = ' asm      lu           1               31                 preonly'
+  dt = 0.0001
 []
 
 [Outputs]

@@ -29,7 +29,8 @@ LevelSetPhaseChangeSUPG::LevelSetPhaseChangeSUPG(const InputParameters & paramet
     _melt_pool_mass_rate(getADMaterialProperty<Real>("melt_pool_mass_rate")),
     _rho_l(getParam<Real>("rho_l")),
     _rho_g(getParam<Real>("rho_g")),
-    _velocity(adCoupledVectorValue("velocity"))
+    _velocity(adCoupledVectorValue("velocity")),
+    _rho(getADMaterialProperty<Real>("rho"))
 {
 }
 
@@ -41,6 +42,6 @@ LevelSetPhaseChangeSUPG::precomputeQpResidual()
       (2 * (_velocity[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm());
 
   return tau * _velocity[_qp] *
-         (-(_heaviside_function[_qp] / _rho_g + (1 - _heaviside_function[_qp]) / _rho_l) *
-          _melt_pool_mass_rate[_qp] * _delta_function[_qp]);
+         (-((_rho_l - _rho_g) / _rho[_qp] / _rho[_qp]) * _melt_pool_mass_rate[_qp] *
+          _delta_function[_qp]);
 }
