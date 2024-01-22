@@ -18,6 +18,7 @@ INSMeltPoolMaterial::validParams()
   params.addClassDescription("Computes extra residuals from melt pool for the INS equations.");
   params.addRequiredCoupledVar("level_set_gradient", "Regularized gradient of Level set variable");
   params.addRequiredCoupledVar("curvature", "Regularized curvature variable");
+  params.addRequiredCoupledVar("level_set", "Level set variable");
   params.addRequiredParam<Real>("surface_tension", "Surface tension coefficient.");
   params.addRequiredParam<Real>("thermal_capillary", "Thermalcapillary coefficient.");
   params.addRequiredParam<Real>("rho_l", "Liquid density.");
@@ -28,6 +29,7 @@ INSMeltPoolMaterial::validParams()
 INSMeltPoolMaterial::INSMeltPoolMaterial(const InputParameters & parameters)
   : INSADStabilized3Eqn(parameters),
     _grad_c(adCoupledVectorValue("level_set_gradient")),
+    _grad_cv(adCoupledGradient("level_set")),
     _temp(adCoupledValue("temperature")),
     _grad_temp(adCoupledGradient("temperature")),
     _curvature(adCoupledValue("curvature")),
@@ -51,8 +53,8 @@ INSMeltPoolMaterial::computeQpProperties()
 {
   INSADStabilized3Eqn::computeQpProperties();
 
-  _mass_strong_residual[_qp] +=
-      _melt_pool_mass_rate[_qp] * _delta_function[_qp] * (1.0 / _rho_g - 1.0 / _rho_l);
+  // _mass_strong_residual[_qp] +=
+  //     _melt_pool_mass_rate[_qp] * _delta_function[_qp] * (1.0 / _rho_g - 1.0 / _rho_l);
 
   ADRealVectorValue darcy_term =
       -_permeability[_qp] * (1 - _heaviside_function[_qp]) * _velocity[_qp];
@@ -68,14 +70,14 @@ INSMeltPoolMaterial::computeQpProperties()
   if (MetaPhysicL::raw_value(_f_l[_qp]) > libMesh::TOLERANCE &&
       MetaPhysicL::raw_value(_delta_function[_qp]) > libMesh::TOLERANCE)
   {
-    normal = _grad_c[_qp] /
-             (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm();
+    normal = _grad_cv[_qp] /
+             (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm();
 
     proj.vectorOuterProduct(normal, normal);
     proj = iden - proj;
     surface_tension_term =
         _sigma * _curvature[_qp] *
-        (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
+        (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
 
     thermalcapillary_term = -proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp];
 
@@ -84,7 +86,7 @@ INSMeltPoolMaterial::computeQpProperties()
     // Recoil Pressure
     _melt_pool_momentum_source[_qp] -=
         0.55 * _saturated_vapor_pressure[_qp] *
-        (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
+        (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
   }
 
   _momentum_strong_residual[_qp] -= _melt_pool_momentum_source[_qp];

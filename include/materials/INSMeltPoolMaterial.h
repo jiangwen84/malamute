@@ -27,6 +27,8 @@ protected:
   /// Gradient of the level set variable
   const ADVectorVariableValue & _grad_c;
 
+  const ADVariableGradient & _grad_cv;
+
   /// Temperature variable
   const ADVariableValue & _temp;
 

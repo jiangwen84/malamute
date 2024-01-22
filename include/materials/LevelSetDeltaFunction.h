@@ -26,6 +26,8 @@ protected:
   /// Gradient of the level set variable
   const ADVectorVariableValue & _grad_c;
 
+  const ADVariableGradient & _grad_cv;
+
   /// Delta function
   ADMaterialProperty<Real> & _delta_function;
 };

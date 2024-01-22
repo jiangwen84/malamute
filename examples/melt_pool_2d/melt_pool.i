@@ -68,10 +68,10 @@
 []
 
 [Functions/ls_exact]
-   type = LevelSetOlssonPlane
-   epsilon = 0.00004
-   point = '0.005 0.005 0'
-   normal = '0 1 0'
+  type = LevelSetOlssonPlane
+  epsilon = 0.00004
+  point = '0.005 0.005 0'
+  normal = '0 1 0'
 []
 
 [BCs]
@@ -100,7 +100,7 @@
     type = LevelSetCurvatureRegularization
     level_set_regularized_gradient = grad_ls
     variable = curvature
-    varepsilon = 2e-4
+    varepsilon = 4e-4
   []
 
   [grad_ls]
@@ -132,20 +132,20 @@
     variable = ls
   []
 
-  [level_set_phase_change]
-    type = LevelSetPhaseChange
-    variable = ls
-    rho_l = 8000
-    rho_g = 1.184
-  []
+  # [level_set_phase_change]
+  #   type = LevelSetPhaseChange
+  #   variable = ls
+  #   rho_l = 8000
+  #   rho_g = 1.184
+  # []
 
-  [level_set_phase_change_supg]
-    type = LevelSetPhaseChangeSUPG
-    variable = ls
-    velocity = velocity
-    rho_l = 8000
-    rho_g = 1.184
-  []
+  # [level_set_phase_change_supg]
+  #   type = LevelSetPhaseChangeSUPG
+  #   variable = ls
+  #   velocity = velocity
+  #   rho_l = 8000
+  #   rho_g = 1.184
+  # []
 
   [heat_time]
     type = ADHeatConductionTimeDerivative
@@ -168,15 +168,15 @@
   [heat_source]
     type = MeltPoolHeatSource
     variable = temp
-    laser_power = 100
+    laser_power = 150
     effective_beam_radius = 0.25e-3
     absorption_coefficient = 0.27
     heat_transfer_coefficient = 100
     StefanBoltzmann_constant = 5.67e-8
     material_emissivity = 0.59
     ambient_temperature = 300
-    laser_location_x = '0.005 + 6e-3*t'
-    laser_location_y = '0.005'
+    laser_location_x = '0.005'
+    laser_location_y = '0.005-1e-3*t'
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
@@ -253,6 +253,7 @@
   [delta]
     type = LevelSetDeltaFunction
     level_set_gradient = grad_ls
+    level_set = ls
     outputs = all
   []
   [heaviside]
@@ -263,13 +264,14 @@
   [ins_melt_pool_mat]
     type = INSMeltPoolMaterial
     level_set_gradient = grad_ls
+    level_set = ls
     velocity = velocity
     pressure = p
     alpha = .1
     temperature = temp
     curvature = curvature
     surface_tension = 1.169
-    thermal_capillary = -4.3e-4
+    thermal_capillary = -4e-4 #-4.3e-4
     rho_l = 8000
     rho_g = 1.184
     outputs = all
@@ -347,9 +349,12 @@
   dt = 1e-3
   nl_abs_tol = 1e-7
   num_steps = 1000
+  nl_max_its = 10
   line_search = 'none'
-  petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
-  petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
+  # petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  petsc_options_value = ' asm      lu           2               31                 preonly'
   nl_div_tol = 1e20
   automatic_scaling = true
 []
