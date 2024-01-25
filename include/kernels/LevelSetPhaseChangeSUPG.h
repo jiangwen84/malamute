@@ -41,4 +41,6 @@ protected:
 
   /// Velocity vector variable
   const ADVectorVariableValue & _velocity;
+
+  const ADMaterialProperty<Real> & _rho;
 };

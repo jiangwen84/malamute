@@ -63,9 +63,8 @@ ADReal
 MeltPoolHeatSource::precomputeQpResidual()
 {
   Point p(0, 0, 0);
-  RealVectorValue laser_location(_laser_location_x.value(_t, p),
-                                 _laser_location_y.value(_t, p),
-                                 _laser_location_z.value(_t, p));
+  RealVectorValue laser_location(
+      _laser_location_x.value(_t, p), _q_point[_qp](1), _laser_location_z.value(_t, p));
 
   ADReal r = (_ad_q_point[_qp] - laser_location).norm();
 
@@ -79,9 +78,12 @@ MeltPoolHeatSource::precomputeQpResidual()
   ADReal heat_source = (convection + radiation + laser_source) * _delta_function[_qp];
 
   // Phase change
-  heat_source += _melt_pool_mass_rate[_qp] * _delta_function[_qp] * _rho[_qp] *
-                     (1.0 / _rho_g - 1.0 / _rho_l) * _cp[_qp] * _u[_qp] -
-                 _Lv * _melt_pool_mass_rate[_qp] * _delta_function[_qp];
+  // heat_source += _melt_pool_mass_rate[_qp] * _delta_function[_qp] * _rho[_qp] *
+  //                    (1.0 / _rho_g - 1.0 / _rho_l) * _cp[_qp] * _u[_qp] -
+  //                _Lv * _melt_pool_mass_rate[_qp] * _delta_function[_qp];
+
+  // if (_t > 0.04)
+  //   return -heat_source * (1 - (_t - 0.04) / 0.04);
 
   return -heat_source;
 }

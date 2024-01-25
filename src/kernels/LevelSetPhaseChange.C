@@ -27,13 +27,16 @@ LevelSetPhaseChange::LevelSetPhaseChange(const InputParameters & parameters)
     _heaviside_function(getADMaterialProperty<Real>("heaviside_function")),
     _melt_pool_mass_rate(getADMaterialProperty<Real>("melt_pool_mass_rate")),
     _rho_l(getParam<Real>("rho_l")),
-    _rho_g(getParam<Real>("rho_g"))
+    _rho_g(getParam<Real>("rho_g")),
+    _rho(getADMaterialProperty<Real>("rho"))
 {
 }
 
 ADReal
 LevelSetPhaseChange::precomputeQpResidual()
 {
-  return -(_heaviside_function[_qp] / _rho_g + (1 - _heaviside_function[_qp]) / _rho_l) *
-         _melt_pool_mass_rate[_qp] * _delta_function[_qp];
+  // return -(_heaviside_function[_qp] / _rho_g + (1 - _heaviside_function[_qp]) / _rho_l) *
+  //        _melt_pool_mass_rate[_qp] * _delta_function[_qp];
+  return -((_rho_l - _rho_g) / _rho[_qp] / _rho[_qp]) * _melt_pool_mass_rate[_qp] *
+         _delta_function[_qp];
 }
