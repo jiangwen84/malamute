@@ -3,31 +3,33 @@
     type = GeneratedMeshGenerator
     dim = 2
     xmin = 0
-    xmax = 0.01
+    xmax = 0.00015
     ymin = 0
-    ymax = 0.01
-    nx = 50
-    ny = 50
+    ymax = 0.003
+    nx = 80
+    ny = 160
     elem_type = QUAD4
   []
+  coord_type = RZ
+  #uniform_refine = 2
 []
 
-[Adaptivity]
-  steps = 2
-  marker = box
-  max_h_level = 2
-  initial_steps = 2
-  stop_time = 1.0e-10
-  [Markers]
-    [box]
-      bottom_left = '0.000 0.004 0'
-      inside = refine
-      top_right = '0.01 0.006 0'
-      outside = do_nothing
-      type = BoxMarker
-    []
-  []
-[]
+# [Adaptivity]
+#   steps = 3
+#   marker = box
+#   max_h_level = 3
+#   initial_steps = 3
+#   stop_time = 1.0e-10
+#   [Markers]
+#     [box]
+#       bottom_left = '0.000 0.001 0'
+#       inside = refine
+#       top_right = '0.005 0.007 0'
+#       outside = do_nothing
+#       type = BoxMarker
+#     []
+#   []
+# []
 
 [Variables]
   [ls]
@@ -41,6 +43,10 @@
 [AuxVariables]
   [ls_0]
     order = FIRST
+  []
+  [combo]
+    family = MONOMIAL
+    order = CONSTANT
   []
 []
 
@@ -79,7 +85,8 @@
   solve_type = NEWTON
   start_time = 0
   num_steps = 10
-  nl_abs_tol = 1e-14
+  nl_abs_tol = 1e-10
+  nl_forced_its = 2
   nl_max_its = 10
   line_search = none
   petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
