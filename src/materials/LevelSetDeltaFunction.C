@@ -16,14 +16,16 @@ LevelSetDeltaFunction::validParams()
 {
   InputParameters params = ADMaterial::validParams();
   params.addClassDescription("Computes delta function given by a level set.");
-  params.addRequiredCoupledVar("level_set_gradient",
-                               "Regularized gradient of the level set variable");
+  params.addRequiredCoupledVar("level_set", "Level set variable");
+  // params.addRequiredCoupledVar("level_set_gradient",
+  //                              "Regularized gradient of the level set variable");
   return params;
 }
 
 LevelSetDeltaFunction::LevelSetDeltaFunction(const InputParameters & parameters)
   : ADMaterial(parameters),
-    _grad_c(adCoupledVectorValue("level_set_gradient")),
+    // _grad_c(adCoupledVectorValue("level_set_gradient")),
+    _grad_cv(adCoupledGradient("level_set")),
     _delta_function(declareADProperty<Real>("delta_function"))
 {
 }
@@ -32,5 +34,5 @@ void
 LevelSetDeltaFunction::computeQpProperties()
 {
   _delta_function[_qp] =
-      (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm();
+      (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm();
 }

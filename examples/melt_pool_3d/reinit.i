@@ -1,36 +1,82 @@
 [Mesh]
-  [gen]
-    type = GeneratedMeshGenerator
-    dim = 3
-    xmin = 0
-    xmax = 0.01
-    ymin = 0
-    ymax = 0.01
-    zmin = 0
-    zmax = 0.01
-    nx = 50
-    ny = 50
-    nz = 50
-    elem_type = HEX8
+  [./gmg]
+    type = ConcentricCircleMeshGenerator
+    num_sectors = 8
+    radii = '0.0015'
+    rings = '4'
+    has_outer_square = no
+    pitch = 1.42063
+    #portion = left_half
+    preserve_volumes = off
+  []
+
+  [./extrude]
+    type = MeshExtruderGenerator
+    input = gmg
+    num_layers = 25
+    extrusion_vector = '0 0 0.006'
+    bottom_sideset = 'new_front'
+    top_sideset = 'new_back'
   []
 []
 
 [Adaptivity]
-  steps = 2
-  marker = box
+  marker = marker
   max_h_level = 2
-  initial_steps = 2
-  stop_time = 1.0e-10
-  [Markers]
-    [box]
-      bottom_left = '0.000 0 0.004'
-      inside = refine
-      top_right = '0.01 0.01 0.006'
-      outside = do_nothing
-      type = BoxMarker
-    []
-  []
+  #cycles_per_step = 2
+  #initial_steps = 1
 []
+
+# [Adaptivity]
+#   steps = 3
+#   marker = box
+#   max_h_level = 3
+#   initial_steps = 3
+#   stop_time = 1.0e-10
+#   [Markers]
+#     [box]
+#       bottom_left = '0.000 0.004 0'
+#       inside = refine
+#       top_right = '0.01 0.006 0'
+#       outside = do_nothing
+#       type = BoxMarker
+#     []
+#   []
+# []
+
+# [Adaptivity]
+#   marker = marker
+#   max_h_level = 3
+#   # cycles_per_step = 1
+#   [Indicators]
+#     [error]
+#       type = GradientJumpIndicator
+#       variable = ls
+#     []
+#     [error2]
+#       type = GradientJumpIndicator
+#       variable = temp
+#     []
+#   []
+#   [Markers]
+#     [./marker]
+#       type = ComboMarker
+#       markers = 'marker1 marker2'
+#     [../]
+#     [marker1]
+#       type = ErrorFractionMarker
+#       coarsen = 0.01
+#       refine = 0.2
+#       indicator = error
+#     []
+#     [./marker2]
+#       type = ValueThresholdMarker
+#       coarsen = 900
+#       variable = temp
+#       refine = 1000
+#     [../]
+#   []
+# []
 
 [Variables]
   [ls]
@@ -40,19 +86,19 @@
     family = LAGRANGE_VEC
   []
 []
-
 [AuxVariables]
   [ls_0]
     order = FIRST
   []
-[]
-
-[Kernels]
-  [grad_ls]
-    type = VariableGradientRegularization
-    regularized_var = ls_0
-    variable = grad_ls
+    [marker]
+    family = MONOMIAL
+    order = CONSTANT
   []
+  # [temp]
+  #   order = FIRST
+  # []
+[]
+[Kernels]
   [time]
     type = TimeDerivative
     variable = ls
@@ -60,20 +106,53 @@
   [reinit]
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
+    level_set = ls_0
     level_set_gradient = grad_ls
     epsilon = 0.00008
   []
+  [grad_ls]
+    type = VariableGradientRegularization
+    regularized_var = ls_0
+    variable = grad_ls
+  []
 []
-
 [Problem]
   type = LevelSetReinitializationProblem
 []
+# [UserObjects]
+#   [arnold]
+#     type = LevelSetOlssonTerminator
+#     tol = 0.5
+#     min_steps = 5
+#   []
+# []
 
-[UserObjects]
-  [arnold]
-    type = LevelSetOlssonTerminator
-    tol = 0.5
-    min_steps = 5
+
+[Preconditioning]
+  [FSP]
+    type = FSP
+    topsplit = 'by_var'
+    [by_var]
+      splitting = 'grad_ls ls'
+      splitting_type = additive
+      petsc_options_iname = '-ksp_type'
+      petsc_options_value = 'fgmres'
+    []
+    [grad_ls]
+      vars = 'grad_ls'
+  #   petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_shift_amount'
+  #  petsc_options_value = ' asm      ilu           2               31 NONZERO  1e-12'
+      petsc_options_iname = '-pc_type -pc_hypre_type'
+  petsc_options_value = 'hypre boomeramg'
+    []
+    [ls]
+      vars = 'ls'
+      # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+      # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+
+  petsc_options_iname = '-pc_type -pc_sub_type'
+  petsc_options_value = 'asm      ilu'
+    []
   []
 []
 
@@ -82,14 +161,27 @@
   solve_type = NEWTON
   start_time = 0
   num_steps = 10
-  nl_abs_tol = 1e-14
+  nl_abs_tol = 1e-10
+  nl_forced_its = 5
   nl_max_its = 10
+  l_max_its = 50
   line_search = none
-  petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
-  petsc_options_value = 'lu NONZERO superlu_dist preonly'
-  dt = 0.00001
-[]
+  scheme = crank-nicolson
+  # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
+  # petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  # petsc_options_value = ' asm      lu           2               31                 preonly'
 
+  # petsc_options_iname = '-pc_type -pc_sub_type'
+  # petsc_options_value = 'asm      ilu'
+
+  #   petsc_options_iname = '-pc_type -pc_hypre_type'
+  # petsc_options_value = 'hypre boomeramg'
+
+  automatic_scaling = true
+  #off_diagonals_in_auto_scaling = true
+  dt = 1e-7
+[]
 [Outputs]
   exodus = false
   execute_on = 'TIMESTEP_END'

@@ -38,4 +38,6 @@ protected:
 
   /// Gas density
   const Real _rho_g;
+
+  const ADMaterialProperty<Real> & _rho;
 };

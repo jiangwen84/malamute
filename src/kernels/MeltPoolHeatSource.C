@@ -34,6 +34,8 @@ MeltPoolHeatSource::validParams()
   params.addRequiredParam<Real>("vaporization_latent_heat", "Latent heat of vaporization.");
   params.addRequiredParam<Real>("rho_l", "Liquid density.");
   params.addRequiredParam<Real>("rho_g", "Gas density.");
+  params.addCoupledVar("laser_deposition", "Laser Deposition Aux Variable");
+  params.addCoupledVar("laser_deposition_number", "Laser Deposition Aux Variable");
   return params;
 }
 
@@ -55,7 +57,12 @@ MeltPoolHeatSource::MeltPoolHeatSource(const InputParameters & parameters)
     _cp(getADMaterialProperty<Real>("specific_heat")),
     _Lv(getParam<Real>("vaporization_latent_heat")),
     _rho_l(getParam<Real>("rho_l")),
-    _rho_g(getParam<Real>("rho_g"))
+    _rho_g(getParam<Real>("rho_g")),
+    _laser_deposition(parameters.isParamValid("laser_deposition") ? coupledValue("laser_deposition")
+                                                                  : _zero),
+    _laser_deposition_num(parameters.isParamValid("laser_deposition_number")
+                              ? coupledValue("laser_deposition_number")
+                              : _zero)
 {
 }
 
@@ -63,25 +70,38 @@ ADReal
 MeltPoolHeatSource::precomputeQpResidual()
 {
   Point p(0, 0, 0);
-  RealVectorValue laser_location(_laser_location_x.value(_t, p),
-                                 _laser_location_y.value(_t, p),
-                                 _laser_location_z.value(_t, p));
+  RealVectorValue laser_location(
+      _laser_location_x.value(_t, p), _laser_location_y.value(_t, p), _q_point[_qp](2));
 
   ADReal r = (_ad_q_point[_qp] - laser_location).norm();
 
   ADReal laser_source = 2 * _power.value(_t, p) * _alpha / (libMesh::pi * Utility::pow<2>(_Rb)) *
                         std::exp(-2.0 * Utility::pow<2>(r / _Rb));
 
-  ADReal convection = -_Ah * (_u[_qp] - _T0);
+  laser_source = 0;
+
+  if (_laser_deposition[_qp] > 0)
+  laser_source = _laser_deposition[_qp]/_current_elem->volume();
+
+  ADReal convection = _Ah * (_u[_qp] - _T0);
   ADReal radiation =
       -_stefan_boltzmann * _varepsilon * (Utility::pow<4>(_u[_qp]) - Utility::pow<4>(_T0));
 
-  ADReal heat_source = (convection + radiation + laser_source) * _delta_function[_qp];
+  ADReal evap = -_Lv * _melt_pool_mass_rate[_qp];
+
+  ADReal heat_source = (radiation + evap) * _delta_function[_qp];
+
+  heat_source += laser_source;
+
+  // ADReal heat_source = laser_source * _delta_function[_qp];
 
   // Phase change
-  heat_source += _melt_pool_mass_rate[_qp] * _delta_function[_qp] * _rho[_qp] *
-                     (1.0 / _rho_g - 1.0 / _rho_l) * _cp[_qp] * _u[_qp] -
-                 _Lv * _melt_pool_mass_rate[_qp] * _delta_function[_qp];
+  // heat_source += _melt_pool_mass_rate[_qp] * _delta_function[_qp] * _rho[_qp] *
+  //                    (1.0 / _rho_g - 1.0 / _rho_l) * _cp[_qp] * _u[_qp] -
+  //                _Lv * _melt_pool_mass_rate[_qp] * _delta_function[_qp];
+
+  // if (_t > 0.04)
+  //   return -heat_source * (1 - (_t - 0.04) / 0.04);
 
   return -heat_source;
 }

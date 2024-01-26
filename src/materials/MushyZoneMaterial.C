@@ -26,7 +26,7 @@ MushyZoneMaterial::validParams()
 
 MushyZoneMaterial::MushyZoneMaterial(const InputParameters & parameters)
   : ADMaterial(parameters),
-    _temp(adCoupledValue("temperature")),
+    _temp(coupledValueOld("temperature")),
     _solidus_temperature(getParam<Real>("solidus_temperature")),
     _liquidus_temperature(getParam<Real>("liquidus_temperature")),
     _f_l(declareADProperty<Real>("liquid_mass_fraction")),
@@ -36,6 +36,12 @@ MushyZoneMaterial::MushyZoneMaterial(const InputParameters & parameters)
     _rho_s(getParam<Real>("rho_s")),
     _rho_l(getParam<Real>("rho_l"))
 {
+}
+
+void
+MushyZoneMaterial::initQpStatefulProperties()
+{
+  _f_l[_qp] = 0.0;
 }
 
 void

@@ -14,7 +14,7 @@ registerMooseObject("MalamuteApp", VariableGradientRegularization);
 InputParameters
 VariableGradientRegularization::validParams()
 {
-  InputParameters params = ADVectorKernel::validParams();
+  InputParameters params = VectorKernel::validParams();
   params.addClassDescription(
       "Performs L2 projection of a variable's gradient onto a new vector variable.");
   params.addRequiredCoupledVar("regularized_var", "The variable to be regularized.");
@@ -22,15 +22,23 @@ VariableGradientRegularization::validParams()
 }
 
 VariableGradientRegularization::VariableGradientRegularization(const InputParameters & parameters)
-  : ADVectorKernel(parameters), _grad_c(adCoupledGradient("regularized_var"))
+  : VectorKernel(parameters), _grad_c(coupledGradient("regularized_var"))
 {
 }
 
-ADReal
+Real
 VariableGradientRegularization::computeQpResidual()
 {
-  if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > libMesh::TOLERANCE)
-    return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]);
-  else
-    return _test[_i][_qp] * _u[_qp];
+  Real s = (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm() + libMesh::TOLERANCE;
+   if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > 1.0e-4)
+     return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]/s);
+   else
+     return _test[_i][_qp] * _u[_qp];
+  //return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp] / s);
+}
+
+Real
+VariableGradientRegularization::computeQpJacobian()
+{
+  return _test[_i][_qp] * (_phi[_j][_qp]);
 }

@@ -24,8 +24,12 @@ public:
 protected:
   void computeQpProperties() override;
 
+  void initQpStatefulProperties() override;
+
   /// Temperature variable
-  const ADVariableValue & _temp;
+  // const ADVariableValue & _temp;
+
+  const VariableValue & _temp;
 
   /// Solidus temperature
   const Real & _solidus_temperature;

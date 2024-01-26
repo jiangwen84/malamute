@@ -27,6 +27,8 @@ protected:
   /// Regularized gradient of the level set variable at time, \tau = 0.
   const VectorVariableValue & _grad_c;
 
+   const VariableGradient & _grad_cv;
+
   /// Interface thickness
   const Real & _epsilon;
 };

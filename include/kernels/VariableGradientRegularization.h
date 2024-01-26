@@ -9,12 +9,12 @@
 
 #pragma once
 
-#include "ADVectorKernel.h"
+#include "VectorKernel.h"
 
 /**
  * This class performs L2 projection of a variable's gradient onto a new vector variable.
  */
-class VariableGradientRegularization : public ADVectorKernel
+class VariableGradientRegularization : public VectorKernel
 {
 public:
   static InputParameters validParams();
@@ -22,8 +22,9 @@ public:
   VariableGradientRegularization(const InputParameters & parameters);
 
 protected:
-  ADReal computeQpResidual() override;
+  Real computeQpResidual() override;
+  Real computeQpJacobian() override;
 
   /// Gradient of the variable that needs regulization
-  const ADVariableGradient & _grad_c;
+  const VariableGradient & _grad_c;
 };

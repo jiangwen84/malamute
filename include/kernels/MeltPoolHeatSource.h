@@ -74,4 +74,9 @@ protected:
 
   /// Gas density
   const Real _rho_g;
+
+  /// The coupled laser deposition values
+  const VariableValue & _laser_deposition;
+  /// The coupled laser deposition values
+  const VariableValue & _laser_deposition_num;
 };
