@@ -90,6 +90,7 @@ LevelSetOlssonSpheres::value(const ADReal & /*t*/, const ADPoint & p) const
 RealGradient
 LevelSetOlssonSpheres::gradient(Real /*t*/, const Point & p) const
 {
+  std::cout << "NOT IMPLEMENTED YET" << std::endl;
   RealGradient output(1.0, 0, 0);
   return output;
 }
