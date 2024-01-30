@@ -96,11 +96,8 @@ LaserReflectionRayKernel::onSegment()
     // Normal to the phase change surface
     const auto phase_normal = _grad_phase[0].unit();
     // Indices of refraction at the start and end points on the segment
-    const auto start_r = _refractive_index[0];
-    const auto end_r = _refractive_index[1];
-
-    // TODO!!!! [1] is 0 !!! Why!!! WJ
-    // std::cout << "_grad_phase = " << _grad_phase[0] << std::endl;
+    // const auto start_r = _refractive_index[0];
+    // const auto end_r = _refractive_index[1];
 
     // Point in this element at which we refract
     const auto refracted_point = phaseChange(_current_segment_start,

@@ -2,8 +2,8 @@
   [gmg]
     type = GeneratedMeshGenerator
     dim = 2
-    nx = 400
-    ny = 800
+    nx = 40
+    ny = 80
     xmax = 200
     ymax = 300
     ymin = -100
@@ -86,38 +86,38 @@
   []
 []
 
-# [UserObjects/study]
-#   type = RepeatableRayStudy
-#   names = 'ray_1'
-#   start_points = '100 300 0'
-#   #end_points = '5 5 0'
-#   directions = '-0.2 -1 0'
-#   execute_on = TIMESTEP_BEGIN
-
-#   # Needed to cache trace information for RayTracingMeshOutput
-#   always_cache_traces = true
-#   # Needed to cache Ray data for RayTracingMeshOutput
-#   data_on_cache_traces = true
-# []
-
 [UserObjects/study]
-  type = ConeRayStudy
-
+  type = RepeatableRayStudy
+  names = 'ray_1'
   start_points = '100 300 0'
-  directions = '0 -1 0'
-  half_cone_angles = 30
-  ray_data_name = weight
-
-  azimuthal_quad_orders = 100
-
-  # Must be set with RayKernels that
-  # contribute to the residual
+  #end_points = '5 5 0'
+  directions = '-0.2 -1 0'
   execute_on = TIMESTEP_BEGIN
 
-  # For outputting Rays
+  # Needed to cache trace information for RayTracingMeshOutput
   always_cache_traces = true
+  # Needed to cache Ray data for RayTracingMeshOutput
   data_on_cache_traces = true
 []
+
+# [UserObjects/study]
+#   type = ConeRayStudy
+
+#   start_points = '100 300 0'
+#   directions = '0 -1 0'
+#   half_cone_angles = 30
+#   ray_data_name = weight
+
+#   azimuthal_quad_orders = 100
+
+#   # Must be set with RayKernels that
+#   # contribute to the residual
+#   execute_on = TIMESTEP_BEGIN
+
+#   # For outputting Rays
+#   always_cache_traces = true
+#   data_on_cache_traces = true
+# []
 
 [Executioner]
   type = Steady
