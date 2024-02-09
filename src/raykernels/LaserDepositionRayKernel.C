@@ -37,8 +37,19 @@ LaserDepositionRayKernel::onSegment()
   if (currentRay()->trajectoryChanged())
   {
     const auto phase_normal = _grad_phase[0].unit();
-    auto dot_prod = std::abs(currentRay()->direction() * phase_normal);
+    // auto dot_prod = std::abs(currentRay()->direction() * phase_normal);
+
+    auto energy = currentRay()->data(currentRay()->study().getRayDataIndex("energy_density"));
+
+    // std::cout << "ray id " << currentRay()->id() << " energy = " << energy << std::endl;
+
     // addValue(100.0 / (currentRay()->intersections() + 1));
-    addValue(dot_prod);
+    addValue(energy);
+
+    currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = 0.5 * energy;
+    currentRay()->data(currentRay()->study().getRayDataIndex("num_reflection")) += 1;
+
+    if (currentRay()->data(currentRay()->study().getRayDataIndex("num_reflection")) > 5)
+      currentRay()->setShouldContinue(false);
   }
 }

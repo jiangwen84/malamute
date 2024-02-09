@@ -1,12 +1,18 @@
-test/tests/laser_ray_tracing/laser_ray_tracing_spheres.i[Mesh]
+[Mesh]
   [gmg]
     type = GeneratedMeshGenerator
     dim = 2
-    nx = 400
-    ny = 800
+    nx = 200
+    ny = 400
     xmax = 200
     ymax = 300
     ymin = -100
+  []
+[]
+
+[Variables]
+  [temp]
+    initial_condition = 300
   []
 []
 
@@ -72,11 +78,43 @@ test/tests/laser_ray_tracing/laser_ray_tracing_spheres.i[Mesh]
   []
 []
 
+[Kernels]
+  [heat_cond]
+    type = ADHeatConduction
+    thermal_conductivity = thermal_conductivity
+    variable = temp
+  []
+  [heat_time]
+    type = ADHeatConductionTimeDerivative
+    specific_heat = specific_heat
+    density_name = rho
+    variable = temp
+  []
+  [heat_source]
+    type = MeltPoolHeatSource
+    variable = temp
+    laser_power = 1000000000
+    effective_beam_radius = 10
+    absorption_coefficient = 1
+    heat_transfer_coefficient = 100
+    StefanBoltzmann_constant = 5.67e-8
+    material_emissivity = 0.59
+    ambient_temperature = 300
+    laser_location_x = '20'
+    laser_location_y = '20'
+    rho_l = 8000
+    rho_g = 1.184
+    vaporization_latent_heat = 6.1e6
+    laser_deposition = deposition
+  []
+
+[]
+
 [RayKernels]
   [refraction]
     type = LaserReflectionRayKernel
     phase = ls
-    refractive_index = ls
+    refractive_index = refractive_index
   []
   [deposition]
     type = LaserDepositionRayKernel
@@ -86,15 +124,50 @@ test/tests/laser_ray_tracing/laser_ray_tracing_spheres.i[Mesh]
   []
 []
 
+[Materials]
+  [thermal]
+    type = LevelSetThermalMaterial
+    temperature = temp
+    c_g = 500
+    c_s = 500
+    c_l = 500
+    # k_g = 0.017
+    k_g = 4000
+    k_s = 4000
+    k_l = 4000
+    solidus_temperature = 1350
+    latent_heat = 2.5e5
+    outputs = all
+  []
+  [rho]
+    type = ADGenericConstantMaterial
+    prop_names = 'rho melt_pool_mass_rate liquid_mass_fraction solid_mass_fraction liquid_volume_fraction solid_volume_fraction '
+    prop_values = '1000 0 0 1 0 1'
+  []
+  [delta]
+    type = LevelSetDeltaFunction
+    #level_set_gradient = grad_ls
+    level_set = ls
+    outputs = all
+  []
+  [heaviside]
+    type = LevelSetHeavisideFunction
+    level_set = ls
+    outputs = all
+  []
+[]
+
 [UserObjects/study]
-  type = LaserRayStudy
+  type = RepeatableRayStudy
+  names = 'ray_1'
+  start_points = '100 300 0'
+  #end_points = '5 5 0'
+  directions = '-0.2 -1 0'
   execute_on = TIMESTEP_BEGIN
 
-  vertex_to_vertex = false
-  centroid_to_vertex = false
-  centroid_to_centroid = false
-
+  # Needed to cache trace information for RayTracingMeshOutput
   always_cache_traces = true
+  # Needed to cache Ray data for RayTracingMeshOutput
   data_on_cache_traces = true
 []
 
@@ -117,12 +190,44 @@ test/tests/laser_ray_tracing/laser_ray_tracing_spheres.i[Mesh]
 #   data_on_cache_traces = true
 # []
 
-[Executioner]
-  type = Steady
+[Postprocessors]
+  [total_relection]
+    type = ElementAverageValue
+    variable = deposition
+  []
+  [total_elements]
+    type = NumElems
+  []
+  [delta_function_integral]
+    type = ADElementIntegralMaterialProperty
+    mat_prop = delta_function
+  []
+  [total_temp]
+    type = ElementAverageValue
+    variable = temp
+  []
 []
 
-[Problem]
-  solve = false
+[Executioner]
+  type = Transient
+  solve_type = NEWTON
+  dt = 10000
+  nl_abs_tol = 1e-6
+  num_steps = 10
+  nl_max_its = 12
+  l_max_its = 100
+
+  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  petsc_options_value = ' asm      lu           2               100                 preonly'
+
+[]
+
+[Preconditioning]
+  [SMP]
+    type = SMP
+    full = true
+    solve_type = 'NEWTON'
+  []
 []
 
 [Outputs]
@@ -134,3 +239,4 @@ test/tests/laser_ray_tracing/laser_ray_tracing_spheres.i[Mesh]
     execute_on = TIMESTEP_END
   []
 []
+

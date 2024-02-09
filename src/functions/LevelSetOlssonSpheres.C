@@ -61,7 +61,7 @@ LevelSetOlssonSpheres::value(Real /*t*/, const Point & p) const
     dist = d;
 
   const auto m = dist / _epsilon;
-  return 1.0 / (1 + std::exp(m));
+  return 1.0 - 1.0 / (1 + std::exp(m));
 }
 
 ADReal
@@ -84,7 +84,7 @@ LevelSetOlssonSpheres::value(const ADReal & /*t*/, const ADPoint & p) const
     dist = d;
 
   const auto m = dist / _epsilon;
-  return 1.0 / (1 + std::exp(m));
+  return 1.0 - 1.0 / (1 + std::exp(m));
 }
 
 RealGradient

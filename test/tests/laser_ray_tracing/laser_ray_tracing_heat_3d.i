@@ -1,0 +1,243 @@
+[Mesh]
+  type = GeneratedMesh
+  dim = 3
+  #nx = 150
+  #ny = 150
+  #nz = 225
+  nx = 30
+  ny = 30
+  nz = 30
+  xmax = 40
+  ymax = 40
+  zmax = 20
+  zmin = -20
+[]
+
+[AuxVariables]
+  [ls]
+    order = FIRST
+    family = LAGRANGE
+  []
+[]
+
+[AuxKernels]
+  [spheres_aux]
+    type = FunctionAux
+    variable = ls
+    function = ls_func
+    execute_on = initial
+  []
+[]
+
+[Variables]
+  [temp]
+    initial_condition = 300
+  []
+[]
+
+[Functions]
+  [ls_func]
+    type = LevelSetOlssonSpheres
+    x_coords = '15	135	135	15	15	135	135	15	46.0381009878785	80.5872232739716	107.340228994269	45.6242613571415	73.2662276336262	99.6681638502913	50.7517542805124	93.3860682973980	50.0335235763384	86.9811696086078	16.4294858076522	14.5900678834005	14.7517113035674	132.181931020399	132.165615173141	12.5850261546299	16.4344773026577	134.022212459376	132.930613980164	14.3931181504280	136.574565607517	137.294140213938	13.3810026111503	58.3569412811747	66.1037490996264	116.138471504129	101.396891378084	39.2993255836284	50.5846934795999	107.607874697605	78.5960937292250	94.0701609929136	38.0182417161655	85.0596611015761	139.200833024974	73.9119190718426	23.1100213026953	106.333027099412	75.4062104786619	49.2931628475034	48.9404896949438	102.657661899006	81.0892342761360	125.131348286609	110.480270744574	118.100085388256	97.0347459807394	14.4266309335776	10.5934715156602	10.0009331161406	10.3055215421101	135.474254521934	139.519680703062	140.722799518542	141.983083634712	116.271738479862	83.8484584619752	63.8915947056140	66.5456437388512	100.817038831395	85.8202932843998	32.0914813206384	37.3759649702142	109.453274837377'
+    y_coords = '15	15	135	135	15	15	135	135	16.0753342790922	18.6677700291902	10.4823062779927	134.362469520282	137.615376592611	135.867184044611	22.1567938794515	20.5388740597698	128.930153067336	133.549191550108	46.3644020951277	77.2746883214308	106.615577003715	47.5751842051932	83.2276305449331	42.3727870448731	70.8770855387042	45.9469091180818	78.9580058259388	14.3931181504280	13.4254343924827	137.294140213938	136.618997388850	47.6624525807239	110.708211608390	113.700907425455	65.3710853079161	108.206477952130	84.8634437992343	33.6229695345518	84.4398704176610	105.810313381082	64.6056609932027	45.6632602073403	110.860268818479	45.5060631994284	106.651791343388	60.5411180889363	104.963634218300	62.2402842890615	94.5509454627841	91.3044621030712	71.7553783546544	105.731158398546	123.999297363104	30.0515245696774	111.604968103751	91.6477558560182	64.2873676863562	115.545488487295	44.4568559207754	111.765500719313	65.3823305441641	111.678668532795	28.5290685550346	138.102662950782	139.741064198362	140.240046521614	90.5734068172002	118.193457538723	47.0066375273219	72.2313290835755	101.555195703296	94.1374583679879'
+    z_coords = '15	15	15	15	60	60	60	60	16.0753342790922	18.6677700291902	10.4823062779927	15.6375304797180	12.3846234073895	14.1328159553886	52.8432061205485	54.4611259402303	53.9301530673363	58.5491915501078	16.4294858076522	14.5900678834005	14.7517113035674	17.8180689796010	17.8343848268592	62.4149738453701	58.5655226973423	59.0222124593764	57.9306139801643	44.3805851447233	43.3380805048011	42.5152413735096	43.2884959678650	17.8767605856302	15.6503810789124	13.4901433616606	17.7405970801905	11.5769671622926	14.5171059167853	12.7729985170265	13.5153963254803	12.8768365333600	12.1552481498170	10.0274321585934	10.0062269936310	62.7962757516222	60.5101103597616	59.6711918533625	60.5460938988058	56.8473997069078	60.9618743035577	59.3449757583406	59.8296228145577	63.6107467027722	62.9627981431576	66.4640755918800	66.1459770785741	39.7963579593107	35.7930718417856	37.3433069373228	42.3836559401164	33.2127099166522	38.5511765109763	56.4296320213227	32.2620765324395	34.0549847385512	32.2901155276826	32.2745618356290	37.8490731438148	33.5557582150851	33.9626577850805	34.4309425283169	36.8902149356572	30.9080982440560'
+    radius = '15	15	15	15	15	15	15	15	16.0753342790922	18.6677700291902	10.4823062779927	15.6375304797180	12.3846234073895	14.1328159553886	22.1567938794515	20.5388740597698	21.0698469326637	16.4508084498922	16.4294858076522	14.5900678834005	14.7517113035674	17.8180689796010	17.8343848268592	12.5850261546299	16.4344773026577	15.9777875406236	17.0693860198357	14.3931181504280	13.4254343924827	12.7058597860617	13.3810026111503	17.8767605856302	15.6503810789124	13.4901433616606	17.7405970801905	11.5769671622926	14.5171059167853	12.7729985170265	13.5153963254803	12.8768365333600	12.1552481498170	10.0274321585934	10.0062269936310	12.2037242483779	14.4898896402384	15.3288081466375	14.4539061011942	18.1526002930922	14.0381256964423	15.6550242416594	15.1703771854423	11.3892532972278	12.0372018568424	8.53592440811999	8.85402292142587	14.4266309335776	10.5934715156602	10.0009331161406	10.3055215421101	14.5257454780658	10.4803192969380	9.27720048145831	8.01691636528780	11.8973370492179	10.2589358016377	9.75995347838648	14.3227329441620	12.1527543872683	13.9575265684591	12.3657607060485	13.5706145547930	13.5432719937778'
+    epsilon = 3
+    point = '0 0 0'
+    normal = '0 0 -1'
+  []
+  # [ls_func]
+  #   type = LevelSetOlssonPlane
+  #   epsilon = 0.5
+  #   point = '0 0 0'
+  #   normal = '0 0 -1'
+  # []
+[]
+
+[AuxVariables]
+  [refractive_index]
+    [InitialCondition]
+      type = FunctionIC
+      function = 0
+    []
+  []
+  [deposition]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [ls]
+    [InitialCondition]
+      type = FunctionIC
+      function = ls_func
+    []
+  []
+[]
+
+[Kernels]
+  [heat_cond]
+    type = ADHeatConduction
+    thermal_conductivity = thermal_conductivity
+    variable = temp
+  []
+  [heat_time]
+    type = ADHeatConductionTimeDerivative
+    specific_heat = specific_heat
+    density_name = rho
+    variable = temp
+  []
+  [heat_source]
+    type = MeltPoolHeatSource
+    variable = temp
+    laser_power = 1000000000
+    effective_beam_radius = 10
+    absorption_coefficient = 1
+    heat_transfer_coefficient = 100
+    StefanBoltzmann_constant = 5.67e-8
+    material_emissivity = 0.59
+    ambient_temperature = 300
+    laser_location_x = '20'
+    laser_location_y = '20'
+    rho_l = 8000
+    rho_g = 1.184
+    vaporization_latent_heat = 6.1e6
+    laser_deposition = deposition
+  []
+
+[]
+
+[RayBCs]
+  [kill]
+    type = KillRayBC
+    boundary = 'top right bottom left back front'
+  []
+[]
+
+[RayKernels]
+  [refraction]
+    type = LaserReflectionRayKernel
+    phase = ls
+    refractive_index = refractive_index
+  []
+  [deposition]
+    type = LaserDepositionRayKernel
+    variable = deposition
+    depends_on = refraction
+    phase = ls
+  []
+[]
+
+[Materials]
+  [thermal]
+    type = LevelSetThermalMaterial
+    temperature = temp
+    c_g = 500
+    c_s = 500
+    c_l = 500
+    # k_g = 0.017
+    k_g = 4000
+    k_s = 4000
+    k_l = 4000
+    solidus_temperature = 1350
+    latent_heat = 2.5e5
+    outputs = all
+  []
+  [rho]
+    type = ADGenericConstantMaterial
+    prop_names = 'rho melt_pool_mass_rate liquid_mass_fraction solid_mass_fraction liquid_volume_fraction solid_volume_fraction '
+    prop_values = '1000 0 0 1 0 1'
+  []
+  [delta]
+    type = LevelSetDeltaFunction
+    #level_set_gradient = grad_ls
+    level_set = ls
+    outputs = all
+  []
+  [heaviside]
+    type = LevelSetHeavisideFunction
+    level_set = ls
+    outputs = all
+  []
+[]
+
+[UserObjects/study]
+  type = RepeatableRayStudy
+  names = 'ray_1'
+  start_points = '100 300 0'
+  #end_points = '5 5 0'
+  directions = '-0.2 -1 0'
+  execute_on = TIMESTEP_BEGIN
+
+  # Needed to cache trace information for RayTracingMeshOutput
+  always_cache_traces = true
+  # Needed to cache Ray data for RayTracingMeshOutput
+  data_on_cache_traces = true
+[]
+
+# [UserObjects/study]
+#   type = ConeRayStudy
+
+#   start_points = '75 75 150'
+#   directions = '0 0 -1'
+#   half_cone_angles = 25
+#   ray_data_name = weight
+
+#   azimuthal_quad_orders = 100
+
+#   # Must be set with RayKernels that
+#   # contribute to the residual
+#   execute_on = TIMESTEP_BEGIN
+
+#   # For outputting Rays
+#   always_cache_traces = true
+#   data_on_cache_traces = true
+# []
+
+[Postprocessors]
+  [total_relection]
+    type = ElementAverageValue
+    variable = deposition
+  []
+  [total_elements]
+    type = NumElems
+  []
+  [delta_function_integral]
+    type = ADElementIntegralMaterialProperty
+    mat_prop = delta_function
+  []
+  [total_temp]
+    type = ElementAverageValue
+    variable = temp
+  []
+[]
+
+[Executioner]
+  type = Transient
+  solve_type = NEWTON
+  dt = 10000
+  nl_abs_tol = 1e-6
+  num_steps = 1
+  nl_max_its = 12
+  l_max_its = 100
+
+  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  petsc_options_value = ' asm      lu           2               100                 preonly'
+
+[]
+
+[Preconditioning]
+  [SMP]
+    type = SMP
+    full = true
+    solve_type = 'NEWTON'
+  []
+[]
+
+[Outputs]
+  exodus = true
+  csv = true
+  [rays]
+    type = RayTracingExodus
+    study = study
+    execute_on = TIMESTEP_END
+  []
+[]

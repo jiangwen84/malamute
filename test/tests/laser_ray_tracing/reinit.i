@@ -2,11 +2,11 @@
   type = GeneratedMeshGenerator
   dim = 2
   xmin = 0
-  xmax = 0.01
-  ymin = 0
-  ymax = 0.01
+  xmax = 0.0098
+  ymin = 0.005
+  ymax = 0.0125
   nx = 300
-  ny = 300
+  ny = 225
   elem_type = QUAD4
 []
 
@@ -56,7 +56,7 @@
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
     level_set_gradient = grad_ls
-    epsilon = 0.00004
+    epsilon = 0.00002
   []
 []
 

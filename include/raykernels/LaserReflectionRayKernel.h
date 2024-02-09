@@ -77,8 +77,12 @@ protected:
   /// Whether or not the current Ray refracted on the last segment
   bool _just_refracted;
   /// The phase threshold for refraction
+
   const Real _threshold;
 
   /// Index of the Ray data that notes if the Ray has refracted or not
   const RayDataIndex _has_refracted_data_index;
+
+  const RayDataIndex _secondary_ray_data_index;
+  const RayDataIndex _secondary_ray_not_reflect_data_index;
 };

@@ -42,7 +42,10 @@ LaserReflectionRayKernel::LaserReflectionRayKernel(const InputParameters & param
     _q_point(_fe_problem.assembly(_tid, _nl.number()).qPoints()),
     _just_refracted(false),
     _threshold(0.5),
-    _has_refracted_data_index(_study.registerRayData("has_refracted"))
+    _has_refracted_data_index(_study.registerRayData(" ")),
+    _secondary_ray_data_index(_study.registerRayAuxData(name() + "_secondary")),
+    _secondary_ray_not_reflect_data_index(
+        _study.registerRayAuxData(name() + "_secondary_not_reflect"))
 {
 }
 
@@ -62,6 +65,18 @@ LaserReflectionRayKernel::onSegment()
   // If we just refracted, it means the start point is in the middle of an
   // element so there's nothing to do here except remove the flag
 
+  const RayDataIndex num_reflection_index = _study.getRayDataIndex("num_reflection");
+
+  // std::cout << "num_reflection = " << currentRay()->data(num_reflection_index) << std::endl;
+
+  // std::cout << "should continue? = " << currentRay()->shouldContinue() << std::endl;
+
+  if (currentRay()->data(num_reflection_index) >= 5)
+    return;
+
+  if (!currentRay()->shouldContinue())
+    return;
+
   auto & has_refracted = currentRay()->data(_has_refracted_data_index);
 
   if (has_refracted)
@@ -76,6 +91,14 @@ LaserReflectionRayKernel::onSegment()
   const auto start_phase = _otf_phase(_current_segment_start);
   const auto end_phase = _otf_phase(_current_segment_end);
 
+  const bool is_secondary = currentRay()->auxData(_secondary_ray_data_index) > 0;
+  const bool is_secondary_reflect =
+      currentRay()->auxData(_secondary_ray_not_reflect_data_index) > 0;
+  if (is_secondary && is_secondary_reflect && start_phase < 0.5)
+  {
+    return;
+  }
+
   // std::cerr << "  start phase " << start_phase << std::endl;
   // std::cerr << "  end phase " << end_phase << std::endl;
 
@@ -87,17 +110,18 @@ LaserReflectionRayKernel::onSegment()
     return;
   }
 
+  Point refracted_direction;
+
   // Phase changes happens in this element
-  if ((MooseUtils::absoluteFuzzyGreaterEqual(start_phase, _threshold) &&
-       MooseUtils::absoluteFuzzyLessEqual(end_phase, _threshold)) ||
-      (MooseUtils::absoluteFuzzyGreaterEqual(end_phase, _threshold) &&
-       MooseUtils::absoluteFuzzyLessEqual(start_phase, _threshold)))
+  if (((MooseUtils::absoluteFuzzyGreaterEqual(start_phase, _threshold) &&
+        MooseUtils::absoluteFuzzyLessEqual(end_phase, _threshold)) ||
+       (MooseUtils::absoluteFuzzyGreaterEqual(end_phase, _threshold) &&
+        MooseUtils::absoluteFuzzyLessEqual(start_phase, _threshold))) &&
+      start_phase >= 0.5)
   {
     // Normal to the phase change surface
     const auto phase_normal = _grad_phase[0].unit();
     // Indices of refraction at the start and end points on the segment
-    // const auto start_r = _refractive_index[0];
-    // const auto end_r = _refractive_index[1];
 
     // Point in this element at which we refract
     const auto refracted_point = phaseChange(_current_segment_start,
@@ -117,9 +141,60 @@ LaserReflectionRayKernel::onSegment()
     // std::cerr << "  refracted at point " << refracted_point << std::endl;
     // std::cerr << "  refracted to direction " << reflected_direction << std::endl;
 
+    const auto original_direction = currentRay()->direction();
+
     changeRayStartDirection(refracted_point, reflected_direction);
 
+    const RayDataIndex energy_density_index = _study.getRayDataIndex("energy_density");
+
+    // std::cout << "data = " << currentRay()->data(energy_density_index) << std::endl;
+
     has_refracted = 1;
+
+    if (currentRay()->auxData(_secondary_ray_data_index))
+      currentRay()->auxData(_secondary_ray_not_reflect_data_index) = 1;
+
+    // // Midpoint of the Ray segment - where the new Ray will start
+    const Point midpoint = 0.5 * (_current_segment_start + _current_segment_end);
+
+    // std::cout << "start phase = " << start_phase << ", end phase = " << end_phase << std::endl;
+    // std::cout << "ray id = " << currentRay()->id() << "   reflect point = " << refracted_point
+    //           << ", reflected_direction = " << reflected_direction << std::endl;
+
+    const auto start_r = _refractive_index[0];
+    const auto end_r = _refractive_index[1];
+    refracted_direction = snell(original_direction, phase_normal, start_r, start_r);
+
+    // std::cout << "midpoint = " << midpoint << std::endl;
+    // std::cout << "start_r = " << start_r << std::endl;
+    // std::cout << "end_r = " << end_r << std::endl;
+    // std::cout << "refracted_direction = " << refracted_direction << std::endl;
+
+    // // std::shared_ptr<Ray> new_ray = acquireRay(midpoint, refracted_direction);
+    // std::shared_ptr<Ray> new_ray = acquireRay(midpoint, Point(-0.1, -1, 0));
+
+    // new_ray->auxData(_secondary_ray_data_index) = 1;
+    // moveRayToBuffer(new_ray);
+  }
+
+  // std::cout << "current ray id = " << currentRay()->id() << std::endl;
+
+  if (has_refracted)
+  {
+    const Point midpoint = 0.5 * (_current_segment_start + _current_segment_end);
+    // std::shared_ptr<Ray> new_ray = acquireRay(_current_segment_end, refracted_direction);
+    if (currentRay()->id() < 200)
+    {
+      std::shared_ptr<Ray> new_ray = acquireRay(_current_segment_end, Point(0, -1, 0));
+      // std::cout << "refracted_direction = " << refracted_direction << std::endl;
+      std::cout << "new_ray id = " << new_ray->id() << std::endl;
+
+      new_ray->auxData(_secondary_ray_data_index) = 1;
+      new_ray->auxData(_secondary_ray_not_reflect_data_index) = 0;
+
+      new_ray->setStartingMaxDistance(200);
+      moveRayToBuffer(new_ray);
+    }
   }
 }
 
@@ -158,11 +233,15 @@ LaserReflectionRayKernel::snell(const Point & direction,
   // Dot product between normal and direction
   const Real c = std::abs(normal * direction);
 
+  // std::cout << "r1 = " << r1 << ", r2 = " << r2 << ", direction = " << direction
+  //           << ", normal = " << normal << std::endl;
+
   // Direction and normal are parallel
   if (c > 1.0 - TOLERANCE)
     return direction;
 
   const Real r = r1 / r2;
+
   return (r * direction + (r * c - std::sqrt(1 - r * r * (1 - c * c))) * normal).unit();
 }
 
