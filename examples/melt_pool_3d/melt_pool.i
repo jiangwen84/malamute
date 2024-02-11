@@ -3,40 +3,40 @@
     type = GeneratedMeshGenerator
     dim = 3
     xmin = 0
-    xmax = 0.01
+    xmax = 0.005
     ymin = 0
-    ymax = 0.01
+    ymax = 0.005
     zmin = 0
-    zmax = 0.01
-    nx = 50
-    ny = 50
-    nz = 50
+    zmax = 0.005
+    nx = 100
+    ny = 100
+    nz = 100
     elem_type = HEX8
   []
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0 0.01'
+    coord = '0.0 0 0.005'
     input = gen
   []
 []
 
-[Adaptivity]
-  steps = 2
-  marker = box
-  max_h_level = 2
-  initial_steps = 2
-  stop_time = 1.0e-10
-  [Markers]
-    [box]
-      bottom_left = '0.000 0 0.004'
-      inside = refine
-      top_right = '0.01 0.01 0.006'
-      outside = do_nothing
-      type = BoxMarker
-    []
-  []
-[]
+# [Adaptivity]
+#   steps = 2
+#   marker = box
+#   max_h_level = 2
+#   initial_steps = 2
+#   stop_time = 1.0e-10
+#   [Markers]
+#     [box]
+#       bottom_left = '0.000 0 0.004'
+#       inside = refine
+#       top_right = '0.01 0.01 0.006'
+#       outside = do_nothing
+#       type = BoxMarker
+#     []
+#   []
+# []
 
 [ICs]
   [ls_ic]
@@ -58,9 +58,9 @@
   [temp]
     initial_condition = 300
   []
-  [grad_ls]
-    family = LAGRANGE_VEC
-  []
+  # [grad_ls]
+  #   family = LAGRANGE_VEC
+  # []
   [velocity]
     family = LAGRANGE_VEC
   []
@@ -70,6 +70,7 @@
   []
 []
 
+<<<<<<< HEAD
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
@@ -77,6 +78,13 @@
     point = '0.005 0.005 0.005'
     normal = '0 0 1'
   []
+=======
+[Functions/ls_exact]
+  type = LevelSetOlssonPlane
+  epsilon = 0.00004
+  point = '0.0025 0.0025 0.0025'
+  normal = '0 0 1'
+>>>>>>> 17c6faf (update 3d input file, test on cluster)
 []
 
 [BCs]
@@ -103,16 +111,16 @@
 [Kernels]
   [curvature]
     type = LevelSetCurvatureRegularization
-    level_set_regularized_gradient = grad_ls
+    level_set = ls
     variable = curvature
-    varepsilon = 4e-4
+    varepsilon = 2e-4
   []
 
-  [grad_ls]
-    type = VariableGradientRegularization
-    regularized_var = ls
-    variable = grad_ls
-  []
+  # [grad_ls]
+  #   type = VariableGradientRegularization
+  #   regularized_var = ls
+  #   variable = grad_ls
+  # []
 
   [level_set_time]
     type = ADTimeDerivative
@@ -137,20 +145,20 @@
     variable = ls
   []
 
-  [level_set_phase_change]
-    type = LevelSetPhaseChange
-    variable = ls
-    rho_l = 8000
-    rho_g = 1.184
-  []
+  # [level_set_phase_change]
+  #   type = LevelSetPhaseChange
+  #   variable = ls
+  #   rho_l = 8000
+  #   rho_g = 1.184
+  # []
 
-  [level_set_phase_change_supg]
-    type = LevelSetPhaseChangeSUPG
-    variable = ls
-    velocity = velocity
-    rho_l = 8000
-    rho_g = 1.184
-  []
+  # [level_set_phase_change_supg]
+  #   type = LevelSetPhaseChangeSUPG
+  #   variable = ls
+  #   velocity = velocity
+  #   rho_l = 8000
+  #   rho_g = 1.184
+  # []
 
   [heat_time]
     type = ADHeatConductionTimeDerivative
@@ -173,16 +181,16 @@
   [heat_source]
     type = MeltPoolHeatSource
     variable = temp
-    laser_power = 100
+    laser_power = 200
     effective_beam_radius = 0.25e-3
     absorption_coefficient = 0.27
     heat_transfer_coefficient = 100
     StefanBoltzmann_constant = 5.67e-8
     material_emissivity = 0.59
     ambient_temperature = 300
-    laser_location_x = '0.005 + 6e-3*t'
-    laser_location_y = '0.005'
-    laser_location_z = '0.005'
+    laser_location_x = '0.0025 + 6e-3*t'
+    laser_location_y = '0.0025'
+    laser_location_z = '0.0025'
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
@@ -231,6 +239,12 @@
     type = INSMeltPoolMomentumSource
     variable = velocity
   []
+
+  [gravity]
+    type = INSADGravityForce
+    variable = velocity
+    gravity = '0 -9.81 0'
+  []
 []
 
 [Materials]
@@ -258,7 +272,7 @@
   []
   [delta]
     type = LevelSetDeltaFunction
-    level_set_gradient = grad_ls
+    level_set = ls
     outputs = all
   []
   [heaviside]
@@ -268,7 +282,8 @@
   []
   [ins_melt_pool_mat]
     type = INSMeltPoolMaterial
-    level_set_gradient = grad_ls
+    # level_set_gradient = grad_ls
+    level_set = ls
     velocity = velocity
     pressure = p
     alpha = .1
@@ -354,8 +369,10 @@
   nl_abs_tol = 1e-7
   num_steps = 1000
   line_search = 'none'
-  petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
-  petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
+  # petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  petsc_options_value = ' asm      lu           2               100                 preonly'
   nl_div_tol = 1e20
   automatic_scaling = true
 []

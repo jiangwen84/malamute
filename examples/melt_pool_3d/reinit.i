@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [Mesh]
   [gen]
     type = GeneratedMeshGenerator
@@ -13,24 +14,39 @@
     nz = 50
     elem_type = HEX8
   []
+=======
+[Mesh/gen]
+  type = GeneratedMeshGenerator
+  dim = 3
+  xmin = 0
+  xmax = 0.005
+  ymin = 0
+  ymax = 0.005
+  zmin = 0
+  zmax = 0.005
+  nx = 100
+  ny = 100
+  nz = 100
+  elem_type = HEX8
+>>>>>>> 17c6faf (update 3d input file, test on cluster)
 []
 
-[Adaptivity]
-  steps = 2
-  marker = box
-  max_h_level = 2
-  initial_steps = 2
-  stop_time = 1.0e-10
-  [Markers]
-    [box]
-      bottom_left = '0.000 0 0.004'
-      inside = refine
-      top_right = '0.01 0.01 0.006'
-      outside = do_nothing
-      type = BoxMarker
-    []
-  []
-[]
+# [Adaptivity]
+#   steps = 2
+#   marker = box
+#   max_h_level = 2
+#   initial_steps = 2
+#   stop_time = 1.0e-10
+#   [Markers]
+#     [box]
+#       bottom_left = '0.000 0 0.004'
+#       inside = refine
+#       top_right = '0.01 0.01 0.006'
+#       outside = do_nothing
+#       type = BoxMarker
+#     []
+#   []
+# []
 
 [Variables]
   [ls]
@@ -61,7 +77,7 @@
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
     level_set_gradient = grad_ls
-    epsilon = 0.00008
+    epsilon = 0.00004
   []
 []
 
