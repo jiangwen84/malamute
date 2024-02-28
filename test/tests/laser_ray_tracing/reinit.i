@@ -1,39 +1,38 @@
-[Mesh/gen]
-  type = GeneratedMeshGenerator
-  dim = 2
-  xmin = 0
-  xmax = 0.0098
-  ymin = 0.005
-  ymax = 0.0125
-  nx = 300
-  ny = 225
-  elem_type = QUAD4
+[Mesh]
+  [gen]
+    type = GeneratedMeshGenerator
+    dim = 2
+    xmin = 0
+    xmax = 0.0009
+    ymin = -0.00025
+    ymax = 0.00125
+    nx = 100
+    ny = 160
+    elem_type = QUAD4
+  []
+  uniform_refine = 2
 []
 
-# [Adaptivity]
-#   steps = 2
-#   marker = box
-#   max_h_level = 2
-#   initial_steps = 2
-#   stop_time = 1.0e-10
-#   [Markers]
-#     [box]
-#       bottom_left = '0.000 0.004 0'
-#       inside = refine
-#       top_right = '0.01 0.006 0'
-#       outside = do_nothing
-#       type = BoxMarker
-#     []
+# [AuxVariables]
+#   [marker]
+#     family = MONOMIAL
+#     order = CONSTANT
 #   []
+# []
+
+# [Adaptivity]
+#   marker = marker
+#   max_h_level = 2
+#   cycles_per_step = 2
 # []
 
 [Variables]
   [ls]
     order = FIRST
   []
-  [grad_ls]
-    family = LAGRANGE_VEC
-  []
+  # [grad_ls]
+  #   family = LAGRANGE_VEC
+  # []
 []
 
 [AuxVariables]
@@ -43,11 +42,11 @@
 []
 
 [Kernels]
-  [grad_ls]
-    type = VariableGradientRegularization
-    regularized_var = ls_0
-    variable = grad_ls
-  []
+  # [grad_ls]
+  #   type = VariableGradientRegularization
+  #   regularized_var = ls_0
+  #   variable = grad_ls
+  # []
   [time]
     type = TimeDerivative
     variable = ls
@@ -55,8 +54,9 @@
   [reinit]
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
-    level_set_gradient = grad_ls
-    epsilon = 0.00002
+    # level_set_gradient = grad_ls
+    level_set = ls_0
+    epsilon = 0.000016
   []
 []
 
@@ -76,7 +76,7 @@
   type = Transient
   solve_type = NEWTON
   start_time = 0
-  num_steps = 20
+  num_steps = 10
   nl_abs_tol = 1e-14
   nl_max_its = 10
   line_search = none
@@ -84,7 +84,7 @@
   # petsc_options_value = 'lu NONZERO superlu_dist preonly'
   petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
   petsc_options_value = ' asm      lu           1               31                 preonly'
-  dt = 0.0001
+  dt = 1e-7
 []
 
 [Outputs]

@@ -69,7 +69,9 @@ protected:
 
   const RayDataIndex _energy_density_index;
 
-    const RayDataIndex _num_reflection_index;
+  const RayDataIndex _num_reflection_index;
+
+  const RayDataIndex _num_deposition_index;
 
 private:
   /// The expected total distance Rays should travel

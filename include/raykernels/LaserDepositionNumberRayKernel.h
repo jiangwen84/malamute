@@ -3,32 +3,29 @@
 /*                                                                          */
 /* MALAMUTE: MOOSE Application Library for Advanced Manufacturing UTilitiEs */
 /*                                                                          */
-/*           Copyright 2021 - 2024, Battelle Energy Alliance, LLC           */
+/*           Copyright 2021 - 2023, Battelle Energy Alliance, LLC           */
 /*                           ALL RIGHTS RESERVED                            */
 /****************************************************************************/
 
 #pragma once
 
-#include "ADKernelGrad.h"
+#include "AuxRayKernel.h"
 
 /**
- * Implements the re-initialization equation that uses regularized gradient.
+ * RayKernel that deposits energy from Rays into an aux variable
  */
-class LevelSetGradientRegularizationReinitialization : public ADKernelGrad
+class LaserDepositionNumberRayKernel : public AuxRayKernel
 {
 public:
+  LaserDepositionNumberRayKernel(const InputParameters & params);
+
   static InputParameters validParams();
 
-  LevelSetGradientRegularizationReinitialization(const InputParameters & parameters);
+  virtual void onSegment() override;
 
 protected:
-  virtual ADRealVectorValue precomputeQpResidual() override;
-
-  /// Regularized gradient of the level set variable at time, \tau = 0.
-  // const VectorVariableValue & _grad_c;
-
-  const VariableGradient & _grad_cv;
-
-  /// Interface thickness
-  const Real & _epsilon;
+  /// The field variable that contains the phase
+  const VariableValue & _phase;
+  /// The gradient of the field variable that contains the phase
+  const VariableGradient & _grad_phase;
 };

@@ -7,12 +7,12 @@
 /*                           ALL RIGHTS RESERVED                            */
 /****************************************************************************/
 
-#include "LaserDepositionRayKernel.h"
+#include "LaserDepositionNumberRayKernel.h"
 
-registerMooseObject("MalamuteApp", LaserDepositionRayKernel);
+registerMooseObject("MalamuteApp", LaserDepositionNumberRayKernel);
 
 InputParameters
-LaserDepositionRayKernel::validParams()
+LaserDepositionNumberRayKernel::validParams()
 {
   auto params = AuxRayKernel::validParams();
   params.addRequiredCoupledVar("phase", "The field variable that contains the phase");
@@ -20,13 +20,13 @@ LaserDepositionRayKernel::validParams()
   return params;
 }
 
-LaserDepositionRayKernel::LaserDepositionRayKernel(const InputParameters & params)
+LaserDepositionNumberRayKernel::LaserDepositionNumberRayKernel(const InputParameters & params)
   : AuxRayKernel(params), _phase(coupledValue("phase")), _grad_phase(coupledGradient("phase"))
 {
 }
 
 void
-LaserDepositionRayKernel::onSegment()
+LaserDepositionNumberRayKernel::onSegment()
 {
   // 'start' and 'end' are the true traced start and end points before
   // refraction (if any). If a refraction kernel just changed a Ray, we now have
@@ -39,20 +39,9 @@ LaserDepositionRayKernel::onSegment()
     const auto phase_normal = _grad_phase[0].unit();
     // auto dot_prod = std::abs(currentRay()->direction() * phase_normal);
 
-    auto energy = currentRay()->data(currentRay()->study().getRayDataIndex("energy_density"));
-
-    // std::cout << "ray id " << currentRay()->id() << " energy = " << energy << std::endl;
+    auto energy = currentRay()->data(currentRay()->study().getRayDataIndex("num_deposition"));
 
     // addValue(100.0 / (currentRay()->intersections() + 1));
-    addValue(energy);
-
-    currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = 0.2 * energy;
-    currentRay()->data(currentRay()->study().getRayDataIndex("num_reflection")) += 1;
-
-    // currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = 0.2 * energy;
-    currentRay()->data(currentRay()->study().getRayDataIndex("num_deposition")) += 1;
-
-    // if (currentRay()->data(currentRay()->study().getRayDataIndex("num_reflection")) > 5)
-    //   currentRay()->setShouldContinue(false);
+    addValue(1);
   }
 }

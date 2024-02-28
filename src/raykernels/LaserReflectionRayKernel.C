@@ -65,14 +65,10 @@ LaserReflectionRayKernel::onSegment()
   // If we just refracted, it means the start point is in the middle of an
   // element so there's nothing to do here except remove the flag
 
-  const RayDataIndex num_reflection_index = _study.getRayDataIndex("num_reflection");
+  // const RayDataIndex num_reflection_index = _study.getRayDataIndex("num_reflection");
 
-  // std::cout << "num_reflection = " << currentRay()->data(num_reflection_index) << std::endl;
-
-  // std::cout << "should continue? = " << currentRay()->shouldContinue() << std::endl;
-
-  if (currentRay()->data(num_reflection_index) >= 5)
-    return;
+  // if (currentRay()->data(num_reflection_index) >= 5)
+  //   return;
 
   if (!currentRay()->shouldContinue())
     return;
@@ -91,13 +87,13 @@ LaserReflectionRayKernel::onSegment()
   const auto start_phase = _otf_phase(_current_segment_start);
   const auto end_phase = _otf_phase(_current_segment_end);
 
-  const bool is_secondary = currentRay()->auxData(_secondary_ray_data_index) > 0;
-  const bool is_secondary_reflect =
-      currentRay()->auxData(_secondary_ray_not_reflect_data_index) > 0;
-  if (is_secondary && is_secondary_reflect && start_phase < 0.5)
-  {
-    return;
-  }
+  // const bool is_secondary = currentRay()->auxData(_secondary_ray_data_index) > 0;
+  // const bool is_secondary_reflect =
+  //     currentRay()->auxData(_secondary_ray_not_reflect_data_index) > 0;
+  // if (is_secondary && is_secondary_reflect && start_phase < 0.5)
+  // {
+  //   return;
+  // }
 
   // std::cerr << "  start phase " << start_phase << std::endl;
   // std::cerr << "  end phase " << end_phase << std::endl;
@@ -113,11 +109,15 @@ LaserReflectionRayKernel::onSegment()
   Point refracted_direction;
 
   // Phase changes happens in this element
+  // if (((MooseUtils::absoluteFuzzyGreaterEqual(start_phase, _threshold) &&
+  //       MooseUtils::absoluteFuzzyLessEqual(end_phase, _threshold)) ||
+  //      (MooseUtils::absoluteFuzzyGreaterEqual(end_phase, _threshold) &&
+  //       MooseUtils::absoluteFuzzyLessEqual(start_phase, _threshold))) &&
+  //     start_phase >= 0.5)
   if (((MooseUtils::absoluteFuzzyGreaterEqual(start_phase, _threshold) &&
         MooseUtils::absoluteFuzzyLessEqual(end_phase, _threshold)) ||
        (MooseUtils::absoluteFuzzyGreaterEqual(end_phase, _threshold) &&
-        MooseUtils::absoluteFuzzyLessEqual(start_phase, _threshold))) &&
-      start_phase >= 0.5)
+        MooseUtils::absoluteFuzzyLessEqual(start_phase, _threshold))))
   {
     // Normal to the phase change surface
     const auto phase_normal = _grad_phase[0].unit();
@@ -179,23 +179,23 @@ LaserReflectionRayKernel::onSegment()
 
   // std::cout << "current ray id = " << currentRay()->id() << std::endl;
 
-  if (has_refracted)
-  {
-    const Point midpoint = 0.5 * (_current_segment_start + _current_segment_end);
-    // std::shared_ptr<Ray> new_ray = acquireRay(_current_segment_end, refracted_direction);
-    if (currentRay()->id() < 200)
-    {
-      std::shared_ptr<Ray> new_ray = acquireRay(_current_segment_end, Point(0, -1, 0));
-      // std::cout << "refracted_direction = " << refracted_direction << std::endl;
-      std::cout << "new_ray id = " << new_ray->id() << std::endl;
+  // if (has_refracted)
+  // {
+  //   const Point midpoint = 0.5 * (_current_segment_start + _current_segment_end);
+  //   // std::shared_ptr<Ray> new_ray = acquireRay(_current_segment_end, refracted_direction);
+  //   if (currentRay()->id() < 200)
+  //   {
+  //     std::shared_ptr<Ray> new_ray = acquireRay(_current_segment_end, Point(0, -1, 0));
+  //     // std::cout << "refracted_direction = " << refracted_direction << std::endl;
+  //     std::cout << "new_ray id = " << new_ray->id() << std::endl;
 
-      new_ray->auxData(_secondary_ray_data_index) = 1;
-      new_ray->auxData(_secondary_ray_not_reflect_data_index) = 0;
+  //     new_ray->auxData(_secondary_ray_data_index) = 1;
+  //     new_ray->auxData(_secondary_ray_not_reflect_data_index) = 0;
 
-      new_ray->setStartingMaxDistance(200);
-      moveRayToBuffer(new_ray);
-    }
-  }
+  //     new_ray->setStartingMaxDistance(200);
+  //     moveRayToBuffer(new_ray);
+  //   }
+  // }
 }
 
 Point

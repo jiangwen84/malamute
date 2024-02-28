@@ -186,15 +186,15 @@
   [heat_source]
     type = MeltPoolHeatSource
     variable = temp
-    laser_power = 300
-    effective_beam_radius = 0.2e-3
+    laser_power = 400
+    effective_beam_radius = 0.5e-3
     absorption_coefficient = 0.27
     heat_transfer_coefficient = 100
     StefanBoltzmann_constant = 5.67e-8
     material_emissivity = 0.59
     ambient_temperature = 300
     laser_location_x = '0.00'
-    laser_location_y = '2e-3-1e-3*t' #'0.005-1e-3*t'
+    laser_location_y = '2e-3' #'0.005-1e-3*t'
     rho_l = 7000
     rho_g = 1
     vaporization_latent_heat = 6.1e6
@@ -250,12 +250,12 @@
     gravity = '0 -9.81 0'
   []
 
-  [buoyancy]
-    type = INSADBoussinesqBodyForce
-    variable = velocity
-    temperature = temp
-    gravity = '0 -9.81 0'
-  []
+  # [buoyancy]
+  #   type = INSADBoussinesqBodyForce
+  #   variable = velocity
+  #   temperature = temp
+  #   gravity = '0 -9.81 0'
+  # []
 []
 
 [Materials]
@@ -397,8 +397,8 @@
 
   #petsc_options = '-snes_converged_reason -ksp_converged_reason -options_left -ksp_monitor_singular_value'
 
-  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
-  petsc_options_value = ' asm      lu           2               100                 preonly'
+  petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_pc_factor_levels -sub_pc_factor_shift_type -pc_factor_shift_amount'
+  petsc_options_value = 'gmres asm      lu           2               100 5 NONZERO 1e-8'
 
   # petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -snes_max_it -sub_pc_factor_shift_type -pc_asm_overlap -pc_factor_shift_amount -sub_pc_factor_levels -sub_ksp_type'
   # petsc_options_value = 'gmres asm lu 100 NONZERO 3 1e-10 1 preonly'

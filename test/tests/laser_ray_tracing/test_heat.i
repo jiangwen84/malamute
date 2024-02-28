@@ -4,9 +4,9 @@
   nx = 80
   ny = 80
   nz = 40
-  xmax = 40
-  ymax = 40
-  zmax = 20
+  xmax = 40e-4
+  ymax = 40e-4
+  zmax = 20e-4
   zmin = 0
 []
 
@@ -47,19 +47,17 @@
   [rho]
     type = ADGenericConstantMaterial
     prop_names = 'rho specific_heat thermal_conductivity'
-    prop_values = '1000 500 4000'
+    prop_values = '7000 500 40'
   []
 []
 
 [Functions]
   [source]
     type = ParsedFunction
-    expression = 'if((x - 20) * (x - 20) + (y - 20) * (y - 20) > 25, 0, 2.0*1000000000/(25*3.14159)*exp(-2.0/25*((x - 20) * (x - 20) + (y - 20) * (y - 20))))'
+    expression = 'if((x - 20e-4) * (x - 20e-4) + (y - 20e-4) * (y - 20e-4) > 25e-8, 0, 2.0*100/(25e-8*3.14159)*exp(-2.0/25e-8*((x - 20e-4) * (x - 20e-4) + (y - 20e-4) * (y - 20e-4))))'
+    # expression = '2.0*200/(25e-8*3.14159)*exp(-2.0/25e-8*((x - 20e-4) * (x - 20e-4) + (y - 20e-4) * (y - 20e-4)))'
+    #expression = 'if((x - 20e-4) * (x - 20e-4) + (y - 20e-4) * (y - 20e-4) > 25e-8, 0, 100000000)'
   []
-  # [source]
-  #   type = ParsedFunction
-  #   expression = 'if((x - 20) * (x - 20) + (y - 20) * (y - 20) > 25, 0, 1000000000)'
-  # []
 []
 
 [BCs]
@@ -81,9 +79,9 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 10000
+  dt = 0.01
   nl_abs_tol = 1e-6
-  num_steps = 1
+  num_steps = 2
   nl_max_its = 12
   l_max_its = 100
 
