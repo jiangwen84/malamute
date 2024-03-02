@@ -46,7 +46,7 @@ LaserDepositionRayKernel::onSegment()
     // addValue(100.0 / (currentRay()->intersections() + 1));
     addValue(energy);
 
-    currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = 0.2 * energy;
+    currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = 0.5 * energy;
     currentRay()->data(currentRay()->study().getRayDataIndex("num_reflection")) += 1;
 
     // currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = 0.2 * energy;

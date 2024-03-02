@@ -20,10 +20,10 @@
 []
 
 [Adaptivity]
-  steps = 2
+  steps = 1
   marker = box
-  max_h_level = 2
-  initial_steps = 2
+  max_h_level = 1
+  initial_steps = 1
   stop_time = 1.0e-10
   [Markers]
     [box]
@@ -194,12 +194,12 @@
     variable = ls
   []
 
-  [level_set_reinit]
-    type = LevelSetOlssonOneStepReinitialization
-    variable = ls
-    reinit_speed = 1e-5
-    epsilon = 0.00002
-  []
+  # [level_set_reinit]
+  #   type = LevelSetOlssonOneStepReinitialization
+  #   variable = ls
+  #   reinit_speed = 1e-5
+  #   epsilon = 0.000016
+  # []
 
   # [level_set_phase_change]
   #   type = LevelSetPhaseChange
@@ -377,8 +377,8 @@
     rho_g = 1
     rho_s = 7000
     rho_l = 7000
-    mu_g = 1e-5
-    mu_l = 0.025
+    mu_g = 1e-4
+    mu_l = 0.05
     permeability_constant = 1e-8
     outputs = all
   []
@@ -453,47 +453,47 @@
   []
 []
 
-# [MultiApps]
-#   [reinit]
-#     type = LevelSetReinitializationMultiApp
-#     input_files = 'reinit.i'
-#     execute_on = TIMESTEP_END
-#   []
-# []
+[MultiApps]
+  [reinit]
+    type = LevelSetReinitializationMultiApp
+    input_files = 'reinit.i'
+    execute_on = TIMESTEP_END
+  []
+[]
 
-# [Transfers]
-#   [to_sub]
-#     type = MultiAppProjectionTransfer
-#     source_variable = ls
-#     variable = ls
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
+[Transfers]
+  [to_sub]
+    type = MultiAppProjectionTransfer
+    source_variable = ls
+    variable = ls
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
 
-#   [to_sub_init]
-#     type = MultiAppProjectionTransfer
-#     source_variable = ls
-#     variable = ls_0
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
+  [to_sub_init]
+    type = MultiAppProjectionTransfer
+    source_variable = ls
+    variable = ls_0
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
 
-#   [from_sub]
-#     type = MultiAppProjectionTransfer
-#     source_variable = ls
-#     variable = ls
-#     from_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
+  [from_sub]
+    type = MultiAppProjectionTransfer
+    source_variable = ls
+    variable = ls
+    from_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
 
-#   # [marker_to_sub]
-#   #   type = LevelSetMeshRefinementTransfer
-#   #   to_multi_app = reinit
-#   #   source_variable = marker
-#   #   variable = marker
-#   #   check_multiapp_execute_on = false
-#   # []
-# []
+  # [marker_to_sub]
+  #   type = LevelSetMeshRefinementTransfer
+  #   to_multi_app = reinit
+  #   source_variable = marker
+  #   variable = marker
+  #   check_multiapp_execute_on = false
+  # []
+[]
 
 [Executioner]
   type = Transient
