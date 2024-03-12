@@ -1,0 +1,111 @@
+//* This file is part of the MOOSE framework
+//* https://www.mooseframework.org
+//*
+//* All rights reserved, see COPYRIGHT for full restrictions
+//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
+
+#pragma once
+
+#include "INSBase.h"
+
+// Forward Declarations
+
+/**
+ * This class computes momentum equation residual and Jacobian viscous
+ * contributions for the "Laplacian" form of the governing equations.
+ */
+class MeltPoolMomentumTractionForm : public INSBase
+{
+public:
+  static InputParameters validParams();
+
+  MeltPoolMomentumTractionForm(const InputParameters & parameters);
+
+  virtual ~MeltPoolMomentumTractionForm() {}
+
+protected:
+  virtual Real computeQpResidual();
+  virtual Real computeQpJacobian();
+  virtual Real computeQpOffDiagJacobian(unsigned jvar);
+  virtual Real computeQpResidualViscousPart();
+  virtual Real computeQpJacobianViscousPart();
+  virtual Real computeQpOffDiagJacobianViscousPart(unsigned jvar);
+
+  virtual Real computeQpResidualMeltPoolPart();
+  virtual Real computeQpJacobianMeltPoolPart();
+  virtual Real computeQpOffDiagJacobianMeltPoolPart(unsigned jvar);
+
+  virtual Real computeQpPGResidual();
+  virtual Real computeQpPGJacobian(unsigned comp);
+
+  virtual RealVectorValue strongMeltPoolTerm();
+  virtual Real dstrongMeltPoolTerm(unsigned comp);
+
+  unsigned _component;
+  bool _integrate_p_by_parts;
+  bool _supg;
+  const Function & _ffn;
+
+  // Parameters
+  const MaterialProperty<Real> & _mu_dc;
+  const MaterialProperty<Real> & _mu_dT;
+
+  const unsigned int _c_id;
+  const unsigned int _temp_id;
+  const unsigned int _curvature_id;
+
+  /// Gradient of the level set variable
+  const VariableGradient & _grad_c;
+
+  /// Temperature variable
+  const VariableValue & _temp;
+
+  /// Gradient of temperature variable
+  const VariableGradient & _grad_temp;
+
+  /// Curvature variable
+  const VariableValue & _curvature;
+
+  /// Permeability in Darcy term
+  const MaterialProperty<Real> & _permeability;
+  const MaterialProperty<Real> & _permeability_dT;
+
+  /// Surface tension coefficient
+  const Real & _sigma;
+
+  /// Thermal-capillary coefficient
+  const Real & _sigmaT;
+
+  /// Level set delta function
+  const MaterialProperty<Real> & _delta_function;
+  const MaterialProperty<RealVectorValue> & _delta_function_dc;
+
+  /// Level set Heaviside function
+  const MaterialProperty<Real> & _heaviside_function;
+  const MaterialProperty<Real> & _heaviside_function_dc;
+
+  /// Density
+  const MaterialProperty<Real> & _rho;
+  const MaterialProperty<Real> & _rho_dc;
+  const MaterialProperty<Real> & _rho_dT;
+
+  /// Liquid density
+  const Real _rho_l;
+
+  /// Gas density
+  const Real _rho_g;
+
+  /// Mass transfer rate
+  const MaterialProperty<Real> & _melt_pool_mass_rate;
+  const MaterialProperty<Real> & _melt_pool_mass_rate_dT;
+
+  /// Saturated vapor pressure
+  const MaterialProperty<Real> & _saturated_vapor_pressure;
+  const MaterialProperty<Real> & _saturated_vapor_pressure_dT;
+
+  /// Liquid mass fraction
+  const MaterialProperty<Real> & _f_l;
+};
