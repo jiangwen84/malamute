@@ -73,4 +73,7 @@ protected:
 
   /// Liquid mass fraction
   const ADMaterialProperty<Real> & _f_l;
+
+  const ADMaterialProperty<Real> & _drho_dc;
+  const ADMaterialProperty<Real> &  _dmelt_pool_mass_rate_dT;
 };

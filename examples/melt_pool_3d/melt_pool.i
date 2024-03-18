@@ -8,9 +8,9 @@
     ymax = 0.005
     zmin = 0
     zmax = 0.005
-    nx = 100
-    ny = 100
-    nz = 100
+    nx = 50
+    ny = 50
+    nz = 50
     elem_type = HEX8
   []
   [corner_node]
@@ -21,22 +21,40 @@
   []
 []
 
-# [Adaptivity]
-#   steps = 2
-#   marker = box
-#   max_h_level = 2
-#   initial_steps = 2
-#   stop_time = 1.0e-10
-#   [Markers]
-#     [box]
-#       bottom_left = '0.000 0 0.004'
-#       inside = refine
-#       top_right = '0.01 0.01 0.006'
-#       outside = do_nothing
-#       type = BoxMarker
-#     []
-#   []
-# []
+[Adaptivity]
+  marker = marker
+  max_h_level = 1
+  # cycles_per_step = 1
+  initial_steps = 1
+  [Indicators]
+    [error]
+      type = GradientJumpIndicator
+      variable = ls
+    []
+    [error2]
+      type = GradientJumpIndicator
+      variable = temp
+    []
+  []
+  [Markers]
+    [./marker]
+      type = ComboMarker
+      markers = 'marker1 marker2'
+    [../]
+    [marker1]
+      type = ErrorFractionMarker
+      coarsen = 0.01
+      refine = 0.05
+      indicator = error
+    []
+    [./marker2]
+      type = ValueThresholdMarker
+      coarsen = 1000
+      variable = temp
+      refine = 1200
+    [../]
+  []
+[]
 
 [ICs]
   [ls_ic]
@@ -81,7 +99,7 @@
 =======
 [Functions/ls_exact]
   type = LevelSetOlssonPlane
-  epsilon = 0.00004
+  epsilon = 0.0001
   point = '0.0025 0.0025 0.0025'
   normal = '0 0 1'
 >>>>>>> 17c6faf (update 3d input file, test on cluster)
@@ -113,7 +131,7 @@
     type = LevelSetCurvatureRegularization
     level_set = ls
     variable = curvature
-    varepsilon = 2e-4
+    varepsilon = 2e-3
   []
 
   # [grad_ls]
@@ -127,16 +145,23 @@
     variable = ls
   []
 
-  [level_set_advection_supg]
-    type = LevelSetAdvectionSUPG
-    velocity = velocity
-    variable = ls
-  []
+  # [level_set_advection_supg]
+  #   type = LevelSetAdvectionSUPG
+  #   velocity = velocity
+  #   variable = ls
+  # []
 
-  [level_set_time_supg]
-    type = LevelSetTimeDerivativeSUPG
-    velocity = velocity
+  # [level_set_time_supg]
+  #   type = LevelSetTimeDerivativeSUPG
+  #   velocity = velocity
+  #   variable = ls
+  # []
+
+  [level_set_reinit]
+    type = LevelSetOlssonOneStepReinitialization
     variable = ls
+    reinit_speed = 1e-3
+    epsilon = 0.0001
   []
 
   [level_set_advection]
@@ -181,14 +206,14 @@
   [heat_source]
     type = MeltPoolHeatSource
     variable = temp
-    laser_power = 200
-    effective_beam_radius = 0.25e-3
+    laser_power = 2000
+    effective_beam_radius = 1e-3
     absorption_coefficient = 0.27
     heat_transfer_coefficient = 100
     StefanBoltzmann_constant = 5.67e-8
     material_emissivity = 0.59
     ambient_temperature = 300
-    laser_location_x = '0.0025 + 6e-3*t'
+    laser_location_x = '0.0025'
     laser_location_y = '0.0025'
     laser_location_z = '0.0025'
     rho_l = 8000
@@ -251,27 +276,28 @@
   [thermal]
     type = LevelSetThermalMaterial
     temperature = temp
-    c_g = 300
-    c_s = 500
-    c_l = 500
-    k_g = 0.017
-    k_s = 31.8724
-    k_l = 209.3
-    solidus_temperature = 1648
+    c_g = 600
+    c_s = 400
+    c_l = 400
+    k_g = 10
+    k_s = 40
+    k_l = 40
+    solidus_temperature = 1350
     latent_heat = 2.5e5
     outputs = all
   []
   [mushy]
     type = MushyZoneMaterial
     temperature = temp
-    liquidus_temperature = 1673
-    solidus_temperature = 1648
-    rho_s = 8000
-    rho_l = 8000
+    liquidus_temperature = 1400
+    solidus_temperature = 1350
+    rho_s = 7000
+    rho_l = 7000
     outputs = all
   []
   [delta]
     type = LevelSetDeltaFunction
+    #level_set_gradient = grad_ls
     level_set = ls
     outputs = all
   []
@@ -282,14 +308,14 @@
   []
   [ins_melt_pool_mat]
     type = INSMeltPoolMaterial
-    # level_set_gradient = grad_ls
+    #level_set_gradient = grad_ls
     level_set = ls
     velocity = velocity
     pressure = p
     alpha = .1
     temperature = temp
     curvature = curvature
-    surface_tension = 1.169
+    surface_tension = 1.169 #1.169
     thermal_capillary = -4.3e-4
     rho_l = 8000
     rho_g = 1.184
@@ -305,77 +331,140 @@
     vaporization_latent_heat = 6.1e6
     atomic_weight = 97.43e-27
     vaporization_temperature = 3134
-    reference_pressure = 1.01e5
+    reference_pressure = 1.01e5 #1.01e5
     outputs = all
   []
   [fluid]
     type = LevelSetFluidMaterial
     rho_g = 1.184
-    rho_s = 8000
-    rho_l = 8000
-    mu_g = 1.81e-5
+    rho_s = 7000
+    rho_l = 7000
+    mu_g = 1e-5
     mu_l = 0.1
     permeability_constant = 1e-8
     outputs = all
   []
 []
 
-[MultiApps]
-  [reinit]
-    type = LevelSetReinitializationMultiApp
-    input_files = 'reinit.i'
-    execute_on = TIMESTEP_END
-  []
-[]
+# [MultiApps]
+#   [reinit]
+#     type = LevelSetReinitializationMultiApp
+#     input_files = 'reinit.i'
+#     execute_on = TIMESTEP_END
+#   []
+# []
 
-[Transfers]
-  [to_sub]
-    type = MultiAppCopyTransfer
-    source_variable = ls
-    variable = ls
-    to_multi_app = reinit
-    execute_on = 'timestep_end'
-  []
+# [Transfers]
+#   [to_sub]
+#     type = MultiAppCopyTransfer
+#     source_variable = ls
+#     variable = ls
+#     to_multi_app = reinit
+#     execute_on = 'timestep_end'
+#   []
 
-  [to_sub_init]
-    type = MultiAppCopyTransfer
-    source_variable = ls
-    variable = ls_0
-    to_multi_app = reinit
-    execute_on = 'timestep_end'
-  []
+#   [to_sub_init]
+#     type = MultiAppCopyTransfer
+#     source_variable = ls
+#     variable = ls_0
+#     to_multi_app = reinit
+#     execute_on = 'timestep_end'
+#   []
 
-  [from_sub]
-    type = MultiAppCopyTransfer
-    source_variable = ls
-    variable = ls
-    from_multi_app = reinit
-    execute_on = 'timestep_end'
-  []
-[]
+#   [from_sub]
+#     type = MultiAppCopyTransfer
+#     source_variable = ls
+#     variable = ls
+#     from_multi_app = reinit
+#     execute_on = 'timestep_end'
+#   []
+# []
 
 [Preconditioning]
-  [SMP]
-    type = SMP
-    full = true
-    solve_type = 'NEWTON'
+  # [SMP]
+  #   type = SMP
+  #   full = false
+  #   solve_type = 'NEWTON'
+  # []
+  [FSP]
+    type = FSP
+    topsplit = 'by_var'
+    full = false
+    [by_var]
+      splitting = 'up temp curvature ls'
+      splitting_type = multiplicative
+      petsc_options_iname = '-ksp_type'
+      petsc_options_value = 'fgmres'
+    []
+    [up]
+      vars = 'velocity p'
+      petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+      petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+      #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
+      #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
+    []
+    [temp]
+      vars = 'temp'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+    []
+    [curvature]
+      vars = 'curvature'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+      #       petsc_options_iname = '-pc_type -ksp_type'
+      # petsc_options_value = '     hypre  preonly'
+    []
+    [ls]
+      vars = 'ls'
+      petsc_options_iname = '-pc_type -ksp_type'
+      petsc_options_value = 'hypre  preonly'
+      # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+      # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+      # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+      # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+    []
   []
 []
 
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 1e-4
+  dt = 1e-3
   nl_abs_tol = 1e-7
   num_steps = 1000
+  nl_max_its = 15
+  l_max_its = 50
   line_search = 'none'
   # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
   # petsc_options_value = 'lu NONZERO superlu_dist preonly'
-  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
-  petsc_options_value = ' asm      lu           2               100                 preonly'
+  # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  # petsc_options_value = ' asm      lu           2               100                 preonly'
   nl_div_tol = 1e20
   automatic_scaling = true
+  off_diagonals_in_auto_scaling = true
 []
+
+[Postprocessors]
+  [memory_average]
+    type = MemoryUsage
+    value_type = average
+    mem_units = gibibytes
+  []
+  [memory_max]
+    type = MemoryUsage
+    value_type = max_process
+    mem_units = gibibytes
+  []
+  [memory_peak]
+    type = MemoryUsage
+    value_type = max_process
+    report_peak_value = true
+    mem_units = gibibytes
+  []
+[]
+
+
 
 [Outputs]
   exodus = true

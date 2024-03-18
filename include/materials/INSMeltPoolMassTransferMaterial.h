@@ -29,6 +29,7 @@ protected:
 
   /// Mass rate
   ADMaterialProperty<Real> & _melt_pool_mass_rate;
+  ADMaterialProperty<Real> & _dmelt_pool_mass_rate_dT;
 
   /// Atomic weight
   const Real & _m;

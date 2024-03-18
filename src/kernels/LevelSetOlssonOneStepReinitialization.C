@@ -34,14 +34,9 @@ LevelSetOlssonOneStepReinitialization::LevelSetOlssonOneStepReinitialization(
 ADRealVectorValue
 LevelSetOlssonOneStepReinitialization::precomputeQpResidual()
 {
-  ADReal s = (_grad_u[_qp] + std::numeric_limits<ADRealVectorValue>::epsilon()).norm() +
-             std::numeric_limits<ADReal>::epsilon();
-  if (MetaPhysicL::raw_value(s) > 1.0e-8)
-  {
-    ADRealVectorValue n = _grad_u[_qp] / s;
-    ADRealVectorValue f = _u[_qp] * (1 - _u[_qp]) * n;
-    return (-f + _epsilon * _grad_u[_qp]) * _reinit_speed;
-  }
-  else
-    return ADRealVectorValue(0.0);
+  ADReal s = (_grad_u[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm() + Real(libMesh::TOLERANCE);
+
+  ADRealVectorValue n = _grad_u[_qp] / s;
+  ADRealVectorValue f = _u[_qp] * (1 - _u[_qp]) * n;
+  return (-f + _epsilon * ((_grad_u[_qp] * n) * n)) * _reinit_speed;
 }

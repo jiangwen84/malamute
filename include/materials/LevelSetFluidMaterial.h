@@ -29,6 +29,8 @@ protected:
   /// Density
   ADMaterialProperty<Real> & _rho;
 
+  ADMaterialProperty<Real> & _drho_dc;
+
   /// Viscosity
   ADMaterialProperty<Real> & _mu;
 

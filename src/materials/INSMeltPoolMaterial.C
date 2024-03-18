@@ -45,7 +45,9 @@ INSMeltPoolMaterial::INSMeltPoolMaterial(const InputParameters & parameters)
     _rho_g(getParam<Real>("rho_g")),
     _melt_pool_mass_rate(getADMaterialProperty<Real>("melt_pool_mass_rate")),
     _saturated_vapor_pressure(getADMaterialProperty<Real>("saturated_vapor_pressure")),
-    _f_l(getADMaterialProperty<Real>("liquid_mass_fraction"))
+    _f_l(getADMaterialProperty<Real>("liquid_mass_fraction")),
+    _drho_dc(getADMaterialProperty<Real>("drho_dc")),
+    _dmelt_pool_mass_rate_dT(getADMaterialProperty<Real>("dmelt_pool_mass_rate_dT"))
 {
 }
 
@@ -54,41 +56,50 @@ INSMeltPoolMaterial::computeQpProperties()
 {
   INSADStabilized3Eqn::computeQpProperties();
 
-  _mass_strong_residual[_qp] +=
-      _melt_pool_mass_rate[_qp] * _delta_function[_qp] * (_rho_l - _rho_g) / _rho[_qp] / _rho[_qp];
+  _melt_pool_momentum_source[_qp] = 0.0;
 
-  ADRealVectorValue darcy_term =
-      -_permeability[_qp] * (1 - _heaviside_function[_qp]) * _velocity[_qp];
-
-  _melt_pool_momentum_source[_qp] = darcy_term;
-
+  ADRealVectorValue darcy_term = ADRealVectorValue(0.0);
   ADRealVectorValue surface_tension_term = ADRealVectorValue(0.0);
   ADRealVectorValue thermalcapillary_term = ADRealVectorValue(0.0);
+  ADRealVectorValue evaporation_term = ADRealVectorValue(0.0);
   RankTwoTensor iden(RankTwoTensor::initIdentity);
   ADRankTwoTensor proj;
   ADRealVectorValue normal = ADRealVectorValue(0.0);
 
-  if (MetaPhysicL::raw_value(_f_l[_qp]) > libMesh::TOLERANCE &&
-      MetaPhysicL::raw_value(_delta_function[_qp]) > libMesh::TOLERANCE)
-  {
-    normal = _grad_cv[_qp] /
-             (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm();
+  darcy_term = -_permeability[_qp] * (1 - _heaviside_function[_qp]) * _velocity[_qp];
+  evaporation_term =
+      1.0 / (_rho[_qp] * _rho[_qp]) *
+      (2 * _melt_pool_mass_rate[_qp] * _rho[_qp] * _dmelt_pool_mass_rate_dT[_qp] * _grad_temp[_qp] -
+       _drho_dc[_qp] * _grad_cv[_qp] * _melt_pool_mass_rate[_qp] * _melt_pool_mass_rate[_qp]);
 
-    proj.vectorOuterProduct(normal, normal);
-    proj = iden - proj;
-    surface_tension_term =
-        _sigma * _curvature[_qp] *
-        (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
+  // if (MetaPhysicL::raw_value(_f_l[_qp]) > libMesh::TOLERANCE &&
+  //     MetaPhysicL::raw_value(_delta_function[_qp]) > libMesh::TOLERANCE)
+  // {
+  normal = _grad_cv[_qp] /
+           (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE)).norm();
 
-    thermalcapillary_term = -proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp];
+  proj.vectorOuterProduct(normal, normal);
+  proj = iden - proj;
+  surface_tension_term = _sigma * _curvature[_qp] *
+                         (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
 
-    _melt_pool_momentum_source[_qp] += -thermalcapillary_term + surface_tension_term;
+  thermalcapillary_term = proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp];
 
-    // Recoil Pressure
-    // _melt_pool_momentum_source[_qp] -=
-    //     0.55 * _saturated_vapor_pressure[_qp] *
-    //     (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
-  }
+  _melt_pool_momentum_source[_qp] +=
+      thermalcapillary_term + surface_tension_term + evaporation_term + darcy_term;
+
+  // Recoil Pressure
+  _melt_pool_momentum_source[_qp] -=
+      0.55 * _saturated_vapor_pressure[_qp] *
+      (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE * libMesh::TOLERANCE));
+  // }
 
   _momentum_strong_residual[_qp] -= _melt_pool_momentum_source[_qp];
+
+  _mass_strong_residual[_qp] -=
+      _melt_pool_mass_rate[_qp] * normal * (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
+
+  // _mass_strong_residual[_qp] +=
+  //     -_melt_pool_mass_rate[_qp] * _delta_function[_qp] * (_rho_l - _rho_g) / _rho[_qp] /
+  //     _rho[_qp];
 }
