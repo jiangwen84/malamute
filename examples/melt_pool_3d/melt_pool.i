@@ -8,9 +8,9 @@
     ymax = 0.005
     zmin = 0
     zmax = 0.005
-    nx = 50
-    ny = 50
-    nz = 50
+    nx = 22
+    ny = 22
+    nz = 22
     elem_type = HEX8
   []
   [corner_node]
@@ -23,9 +23,9 @@
 
 [Adaptivity]
   marker = marker
-  max_h_level = 1
+  max_h_level = 2
   # cycles_per_step = 1
-  initial_steps = 1
+  initial_steps = 2
   [Indicators]
     [error]
       type = GradientJumpIndicator
@@ -42,16 +42,16 @@
       markers = 'marker1 marker2'
     [../]
     [marker1]
-      type = ErrorFractionMarker
-      coarsen = 0.01
-      refine = 0.05
-      indicator = error
+      type = ValueRangeMarker
+      lower_bound = 0.05
+      upper_bound = 0.95
+      variable = ls
     []
     [./marker2]
       type = ValueThresholdMarker
-      coarsen = 1000
+      coarsen = 600
       variable = temp
-      refine = 1200
+      refine = 1000
     [../]
   []
 []
@@ -99,7 +99,7 @@
 =======
 [Functions/ls_exact]
   type = LevelSetOlssonPlane
-  epsilon = 0.0001
+  epsilon = 0.0002
   point = '0.0025 0.0025 0.0025'
   normal = '0 0 1'
 >>>>>>> 17c6faf (update 3d input file, test on cluster)
@@ -109,15 +109,15 @@
   [no_slip]
     type = ADVectorFunctionDirichletBC
     variable = velocity
-    boundary = 'bottom left right top back'
+    boundary = 'bottom front left right top back'
   []
-  [no_bc]
-    type = INSADMomentumNoBCBC
-    variable = velocity
-    viscous_form = 'traction'
-    boundary = 'front'
-    pressure = p
-  []
+  # [no_bc]
+  #   type = INSADMomentumNoBCBC
+  #   variable = velocity
+  #   viscous_form = 'traction'
+  #   boundary = 'front left right top back'
+  #   pressure = p
+  # []
   [pressure_pin]
     type = DirichletBC
     variable = p
@@ -161,7 +161,7 @@
     type = LevelSetOlssonOneStepReinitialization
     variable = ls
     reinit_speed = 1e-3
-    epsilon = 0.0001
+    epsilon = 0.0002
   []
 
   [level_set_advection]
@@ -219,6 +219,8 @@
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
+    laser_deposition = deposition
+    laser_deposition_number = deposition_number
   []
 
   [mass]
@@ -270,6 +272,62 @@
     variable = velocity
     gravity = '0 -9.81 0'
   []
+[]
+
+[AuxVariables]
+  [refractive_index]
+    [InitialCondition]
+      type = FunctionIC
+      function = 0
+    []
+  []
+  [deposition]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [deposition_number]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+[]
+
+[RayBCs]
+  [kill]
+    type = KillRayBC
+    boundary = 'top right bottom left back front'
+  []
+[]
+
+[RayKernels]
+  [refraction]
+    type = LaserReflectionRayKernel
+    phase = ls
+    refractive_index = refractive_index
+  []
+  [deposition]
+    type = LaserDepositionRayKernel
+    variable = deposition
+    depends_on = refraction
+    phase = ls
+  []
+  [deposition_number]
+    type = LaserDepositionNumberRayKernel
+    variable = deposition_number
+    depends_on = refraction
+    phase = ls
+  []
+[]
+
+[UserObjects/study]
+  type = LaserRayStudy
+  execute_on = TIMESTEP_BEGIN
+
+  vertex_to_vertex = false
+  centroid_to_vertex = false
+  centroid_to_centroid = false
+
+  always_cache_traces = true
+  data_on_cache_traces = true
 []
 
 [Materials]
@@ -389,9 +447,9 @@
   [FSP]
     type = FSP
     topsplit = 'by_var'
-    full = false
+    full = true
     [by_var]
-      splitting = 'up temp curvature ls'
+      splitting = 'up temp curvature'
       splitting_type = multiplicative
       petsc_options_iname = '-ksp_type'
       petsc_options_value = 'fgmres'
@@ -399,7 +457,7 @@
     [up]
       vars = 'velocity p'
       petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
-      petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+      petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-8'
       #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
       #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
     []
@@ -407,23 +465,25 @@
       vars = 'temp'
       petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
       petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
-    []
-    [curvature]
-      vars = 'curvature'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
-      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
-      #       petsc_options_iname = '-pc_type -ksp_type'
+      # petsc_options_iname = '-pc_type -ksp_type'
       # petsc_options_value = '     hypre  preonly'
     []
-    [ls]
-      vars = 'ls'
-      petsc_options_iname = '-pc_type -ksp_type'
-      petsc_options_value = 'hypre  preonly'
+    [curvature]
+      vars = 'curvature ls'
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
       # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
-      # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
-      # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+            petsc_options_iname = '-pc_type -ksp_type'
+      petsc_options_value = '     hypre  preonly'
     []
+    # [ls]
+    #   vars = 'ls'
+    #   # petsc_options_iname = '-pc_type -ksp_type'
+    #   # petsc_options_value = 'hypre  preonly'
+    #   petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+    #   petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+    #   # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+    #   # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+    # []
   []
 []
 
@@ -468,4 +528,9 @@
 
 [Outputs]
   exodus = true
+  [rays]
+    type = RayTracingExodus
+    study = study
+    execute_on = TIMESTEP_END
+  []
 []

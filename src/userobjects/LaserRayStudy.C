@@ -216,15 +216,15 @@ LaserRayStudy::defineRays()
 
   // 3D
 
-  unsigned int nx = 20;
-  unsigned int ny = 20;
-  Real r0 = 0.25e-3;
-  Real cut_off_r = 30e-6;
-  Real xmin = 60e-6;
-  Real ymin = 60e-6;
-  Real xmax = 120e-6;
-  Real ymax = 120e-6;
-  Real Q = 100;
+  unsigned int nx = 80;
+  unsigned int ny = 80;
+  Real r0 = 1e-3;
+  Real cut_off_r = 0.5e-3;
+  Real xmin = 0.0015;
+  Real ymin = 0.0015;
+  Real xmax = 0.0035;
+  Real ymax = 0.0035;
+  Real Q = 350;
   Real size = (xmax - xmin) / nx;
   unsigned int num_rays = 0;
 
@@ -252,7 +252,7 @@ LaserRayStudy::defineRays()
   }
 
   // Real Q_bar = Q * (r0 * r0 * libMesh::pi) / num_rays / _mesh.elemPtr(0)->volume();
-  Real Q_bar = Q / _mesh.elemPtr(0)->hmin();
+  Real Q_bar = Q / _mesh.elemPtr(0)->hmin()*4.0;
 
   num_rays = 0;
 
@@ -268,7 +268,7 @@ LaserRayStudy::defineRays()
         names.push_back("ray_" + std::to_string(num_rays));
         x_coords.push_back(xcell);
         y_coords.push_back(ycell);
-        start_points.push_back(Point(xcell, ycell, 300e-6));
+        start_points.push_back(Point(xcell, ycell, 0.005));
         directions.push_back(Point(0, 0, -1));
         Real energy =
             2.0 * Q_bar / (r0 * r0 * libMesh::pi) *
@@ -299,7 +299,7 @@ LaserRayStudy::defineRays()
 
     ray->data(_energy_density_index) = energy_rays[i];
 
-    ray->setStartingMaxDistance(0.003);
+    ray->setStartingMaxDistance(0.03);
 
     _rays.emplace_back(std::move(ray));
   }
