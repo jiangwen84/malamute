@@ -3,29 +3,33 @@
     type = GeneratedMeshGenerator
     dim = 3
     xmin = 0
-    xmax = 0.005
+    xmax = 0.004
     ymin = 0
-    ymax = 0.005
+    ymax = 0.004
     zmin = 0
-    zmax = 0.005
-    nx = 22
-    ny = 22
-    nz = 22
+    zmax = 0.004
+    nx = 15
+    ny = 15
+    nz = 15
     elem_type = HEX8
   []
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0 0.005'
+    coord = '0.0 0 0.004'
     input = gen
   []
 []
 
+[Problem]
+  type = LevelSetProblem
+[]
+
 [Adaptivity]
   marker = marker
-  max_h_level = 2
-  # cycles_per_step = 1
-  initial_steps = 2
+  max_h_level = 3
+  #cycles_per_step = 2
+  #initial_steps = 1
   [Indicators]
     [error]
       type = GradientJumpIndicator
@@ -145,24 +149,24 @@
     variable = ls
   []
 
-  # [level_set_advection_supg]
-  #   type = LevelSetAdvectionSUPG
-  #   velocity = velocity
-  #   variable = ls
-  # []
-
-  # [level_set_time_supg]
-  #   type = LevelSetTimeDerivativeSUPG
-  #   velocity = velocity
-  #   variable = ls
-  # []
-
-  [level_set_reinit]
-    type = LevelSetOlssonOneStepReinitialization
+  [level_set_advection_supg]
+    type = LevelSetAdvectionSUPG
+    velocity = velocity
     variable = ls
-    reinit_speed = 1e-3
-    epsilon = 0.0002
   []
+
+  [level_set_time_supg]
+    type = LevelSetTimeDerivativeSUPG
+    velocity = velocity
+    variable = ls
+  []
+
+  # [level_set_reinit]
+  #   type = LevelSetOlssonOneStepReinitialization
+  #   variable = ls
+  #   reinit_speed = 1e-3
+  #   epsilon = 0.0002
+  # []
 
   [level_set_advection]
     type = LevelSetAdvection
@@ -374,7 +378,7 @@
     temperature = temp
     curvature = curvature
     surface_tension = 1.169 #1.169
-    thermal_capillary = -4.3e-4
+    thermal_capillary = -4.3e-5
     rho_l = 8000
     rho_g = 1.184
     outputs = all
@@ -398,45 +402,53 @@
     rho_s = 7000
     rho_l = 7000
     mu_g = 1e-5
-    mu_l = 0.1
+    mu_l = 0.01
     permeability_constant = 1e-8
     outputs = all
   []
 []
 
-# [MultiApps]
-#   [reinit]
-#     type = LevelSetReinitializationMultiApp
-#     input_files = 'reinit.i'
-#     execute_on = TIMESTEP_END
-#   []
-# []
+[MultiApps]
+  [reinit]
+    type = LevelSetReinitializationMultiApp
+    input_files = 'reinit.i'
+    execute_on = TIMESTEP_END
+  []
+[]
 
-# [Transfers]
-#   [to_sub]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
+[Transfers]
 
-#   [to_sub_init]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls_0
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
+  [marker]
+    type = LevelSetMeshRefinementTransfer
+    source_variable = marker
+    variable = marker
+    to_multi_app = reinit
+  []
 
-#   [from_sub]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls
-#     from_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-# []
+  [to_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+
+  [to_sub_init]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls_0
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+
+  [from_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    from_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+[]
 
 [Preconditioning]
   # [SMP]
@@ -463,8 +475,8 @@
     []
     [temp]
       vars = 'temp'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
-      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type  -ksp_pc_side'
+      petsc_options_value = 'gmres    300  hypre  boomeramg  right'
       # petsc_options_iname = '-pc_type -ksp_type'
       # petsc_options_value = '     hypre  preonly'
     []
@@ -485,13 +497,63 @@
     #   # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
     # []
   []
+# [FSP]
+#   type = FSP
+#   topsplit = 'by_var'
+#   full = true
+#   [by_var]
+#     splitting = 'up temp ls'
+#     splitting_type = additive
+#     petsc_options_iname = '-ksp_type'
+#     petsc_options_value = 'fgmres'
+#   []
+#   [up]
+#     # vars = 'velocity p'
+#     # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+#     # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+#     #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
+#     #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
+
+#     #splitting = 'u p' # 'u' and 'p' are the names of subsolvers
+#     splitting_type = schur
+#     vars = 'velocity p'
+#     petsc_options_iname = '-pc_fieldsplit_schur_fact_type  -pc_fieldsplit_schur_precondition -ksp_rtol -ksp_gmres_restart -ksp_type'
+#     petsc_options_value = 'full                            selfp          5e-1                   300                    fgmres'
+#   []
+
+#   [u]
+#     vars = 'velocity'
+#     petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
+#     petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
+#   []
+#   [p]
+#     vars = 'p'
+#     petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
+#     petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
+#   []
+
+#   [temp]
+#     vars = 'temp'
+#     petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type  -ksp_pc_side'
+#     petsc_options_value = 'gmres    50                     hypre  boomeramg  right'
+#     #       petsc_options_iname = '-pc_type -ksp_type'
+#     # petsc_options_value = '     hypre  preonly'
+#   []
+#   [ls]
+#     vars = 'curvature ls'
+#     # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+#     # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+#     petsc_options_iname = '-pc_type -ksp_type'
+#     petsc_options_value = '     hypre  preonly'
+#   []
+# []
 []
 
 [Executioner]
   type = Transient
   solve_type = NEWTON
   dt = 1e-3
-  nl_abs_tol = 1e-7
+  nl_abs_tol = 1e-6
   num_steps = 1000
   nl_max_its = 15
   l_max_its = 50
@@ -527,6 +589,7 @@
 
 
 [Outputs]
+  checkpoint = true
   exodus = true
   [rays]
     type = RayTracingExodus
