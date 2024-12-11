@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-[Mesh]
-  [gen]
-    type = GeneratedMeshGenerator
-    dim = 3
-    xmin = 0
-    xmax = 0.01
-    ymin = 0
-    ymax = 0.01
-    zmin = 0
-    zmax = 0.01
-    nx = 50
-    ny = 50
-    nz = 50
-    elem_type = HEX8
-  []
-=======
 [Mesh/gen]
   type = GeneratedMeshGenerator
   dim = 3
@@ -28,7 +11,6 @@
   ny = 15
   nz = 15
   elem_type = HEX8
->>>>>>> 17c6faf (update 3d input file, test on cluster)
 []
 
 [Adaptivity]
