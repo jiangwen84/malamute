@@ -218,12 +218,12 @@ LaserRayStudy::defineRays()
 
   unsigned int nx = 80;
   unsigned int ny = 80;
-  Real r0 = 1e-3;
-  Real cut_off_r = 0.5e-3;
-  Real xmin = 0.001;
-  Real ymin = 0.001;
-  Real xmax = 0.003;
-  Real ymax = 0.003;
+  Real r0 = 0.6e-3;
+  Real cut_off_r = 0.6e-3;
+  Real xmin = -0.0015;
+  Real ymin = -0.0015;
+  Real xmax = 0.0015;
+  Real ymax = 0.0015;
   Real Q = 600;
   Real size = (xmax - xmin) / nx;
   unsigned int num_rays = 0;
@@ -268,7 +268,7 @@ LaserRayStudy::defineRays()
         names.push_back("ray_" + std::to_string(num_rays));
         x_coords.push_back(xcell);
         y_coords.push_back(ycell);
-        start_points.push_back(Point(xcell, ycell, 0.004));
+        start_points.push_back(Point(xcell, ycell, 0.006));
         directions.push_back(Point(0, 0, -1));
         Real energy =
             2.0 * Q_bar / (r0 * r0 * libMesh::pi) *

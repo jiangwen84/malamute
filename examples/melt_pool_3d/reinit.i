@@ -1,16 +1,23 @@
-[Mesh/gen]
-  type = GeneratedMeshGenerator
-  dim = 3
-  xmin = 0
-  xmax = 0.004
-  ymin = 0
-  ymax = 0.004
-  zmin = 0
-  zmax = 0.004
-  nx = 15
-  ny = 15
-  nz = 15
-  elem_type = HEX8
+[Mesh]
+  [./gmg]
+    type = ConcentricCircleMeshGenerator
+    num_sectors = 8
+    radii = '0.0015'
+    rings = '4'
+    has_outer_square = no
+    pitch = 1.42063
+    #portion = left_half
+    preserve_volumes = off
+  []
+
+  [./extrude]
+    type = MeshExtruderGenerator
+    input = gmg
+    num_layers = 25
+    extrusion_vector = '0 0 0.006'
+    bottom_sideset = 'new_front'
+    top_sideset = 'new_back'
+  []
 []
 
 [Adaptivity]
@@ -24,9 +31,9 @@
   [ls]
     order = FIRST
   []
-  # [grad_ls]
-  #   family = LAGRANGE_VEC
-  # []
+  [grad_ls]
+    family = LAGRANGE_VEC
+  []
 []
 
 [AuxVariables]
@@ -40,11 +47,11 @@
 []
 
 [Kernels]
-  # [grad_ls]
-  #   type = VariableGradientRegularization
-  #   regularized_var = ls_0
-  #   variable = grad_ls
-  # []
+  [grad_ls]
+    type = VariableGradientRegularization
+    regularized_var = ls_0
+    variable = grad_ls
+  []
   [time]
     type = TimeDerivative
     variable = ls
@@ -52,8 +59,8 @@
   [reinit]
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
-    level_set = ls
-    epsilon = 0.0002
+    epsilon = 0.00006
+    level_set_gradient = grad_ls
   []
 []
 
@@ -61,18 +68,47 @@
   type = LevelSetReinitializationProblem
 []
 
+
+[Preconditioning]
+  [FSP]
+    type = FSP
+    topsplit = 'by_var'
+    full = true
+    [by_var]
+      splitting = 'grad_ls ls'
+      splitting_type = multiplicative
+      petsc_options_iname = '-ksp_type'
+      petsc_options_value = 'fgmres'
+    []
+    [grad_ls]
+      vars = 'grad_ls'
+    petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+   petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+    []
+    [ls]
+      vars = 'ls'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+    []
+  []
+[]
+
 [Executioner]
   type = Transient
   solve_type = NEWTON
   start_time = 0
   num_steps = 10
-  nl_abs_tol = 1e-9
+  nl_abs_tol = 1e-10
   nl_max_its = 10
-  nl_forced_its = 3
+  nl_forced_its = 5
   line_search = none
-  petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type'
-  petsc_options_value = 'gmres    300              hypre  boomeramg'
-  dt = 0.0000001
+  # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type'
+  # petsc_options_value = 'gmres    300              hypre  boomeramg'
+      #   petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+      # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-8'
+  #       petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
+  # petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  dt = 1e-8
 []
 
 [Outputs]

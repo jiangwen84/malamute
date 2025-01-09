@@ -1,23 +1,28 @@
 [Mesh]
-  [gen]
-    type = GeneratedMeshGenerator
-    dim = 3
-    xmin = 0
-    xmax = 0.004
-    ymin = 0
-    ymax = 0.004
-    zmin = 0
-    zmax = 0.004
-    nx = 15
-    ny = 15
-    nz = 15
-    elem_type = HEX8
+  [./gmg]
+    type = ConcentricCircleMeshGenerator
+    num_sectors = 8
+    radii = '0.0015'
+    rings = '4'
+    has_outer_square = no
+    pitch = 1.42063
+    #portion = left_half
+    preserve_volumes = off
+  []
+
+  [./extrude]
+    type = MeshExtruderGenerator
+    input = gmg
+    num_layers = 25
+    extrusion_vector = '0 0 0.006'
+    bottom_sideset = 'new_front'
+    top_sideset = 'new_back'
   []
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0 0.004'
-    input = gen
+    coord = '0.0 0 0'
+    input = extrude
   []
 []
 
@@ -27,7 +32,7 @@
 
 [Adaptivity]
   marker = marker
-  max_h_level = 3
+  max_h_level = 2
   #cycles_per_step = 2
   #initial_steps = 1
   [Indicators]
@@ -53,9 +58,9 @@
     []
     [./marker2]
       type = ValueThresholdMarker
-      coarsen = 600
+      coarsen = 400
       variable = temp
-      refine = 1000
+      refine = 600
     [../]
   []
 []
@@ -94,8 +99,8 @@
 
 [Functions/ls_exact]
   type = LevelSetOlssonPlane
-  epsilon = 0.0002
-  point = '0.0025 0.0025 0.0025'
+  epsilon = 0.00006
+  point = '0.00 0.00 0.003'
   normal = '0 0 1'
 []
 
@@ -103,7 +108,7 @@
   [no_slip]
     type = ADVectorFunctionDirichletBC
     variable = velocity
-    boundary = 'bottom front left right top back'
+    boundary = 'new_front new_back outer'
   []
   # [no_bc]
   #   type = INSADMomentumNoBCBC
@@ -154,8 +159,8 @@
   # [level_set_reinit]
   #   type = LevelSetOlssonOneStepReinitialization
   #   variable = ls
-  #   reinit_speed = 1e-3
-  #   epsilon = 0.0002
+  #   reinit_speed = 1e-6
+  #   epsilon = 0.00006
   # []
 
   [level_set_advection]
@@ -288,7 +293,7 @@
 [RayBCs]
   [kill]
     type = KillRayBC
-    boundary = 'top right bottom left back front'
+    boundary = 'new_back new_front outer'
   []
 []
 
@@ -474,7 +479,7 @@
       vars = 'curvature ls'
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
       # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
-            petsc_options_iname = '-pc_type -ksp_type'
+      petsc_options_iname = '-pc_type -ksp_type'
       petsc_options_value = '     hypre  preonly'
     []
     # [ls]
@@ -542,10 +547,10 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 1e-3
+  dt = 0.00025
   nl_abs_tol = 1e-6
   num_steps = 1000
-  nl_max_its = 15
+  nl_max_its = 10
   l_max_its = 50
   line_search = 'none'
   # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
