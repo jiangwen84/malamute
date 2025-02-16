@@ -21,6 +21,7 @@ LevelSetFluidMaterial::validParams()
   params.addRequiredParam<Real>("rho_l", "Liquid density.");
   params.addRequiredParam<Real>("mu_g", "Gas viscosity.");
   params.addRequiredParam<Real>("mu_l", "Liquid viscosity.");
+  params.addRequiredParam<Real>("mu_s", "solid viscosity.");
   params.addRequiredParam<Real>("permeability_constant", "Permeability constant");
   return params;
 }
@@ -36,6 +37,7 @@ LevelSetFluidMaterial::LevelSetFluidMaterial(const InputParameters & parameters)
     _rho_s(getParam<Real>("rho_s")),
     _mu_g(getParam<Real>("mu_g")),
     _mu_l(getParam<Real>("mu_l")),
+    _mu_s(getParam<Real>("mu_s")),
     _f_l(getADMaterialProperty<Real>("liquid_mass_fraction")),
     _f_s(getADMaterialProperty<Real>("solid_mass_fraction")),
     _g_l(getADMaterialProperty<Real>("liquid_volume_fraction")),
@@ -48,17 +50,25 @@ LevelSetFluidMaterial::LevelSetFluidMaterial(const InputParameters & parameters)
 void
 LevelSetFluidMaterial::computeQpProperties()
 {
-  ADReal rho_m = _g_s[_qp] * _rho_s + _g_l[_qp] * _rho_l;
-  _rho[_qp] = (1 - _heaviside_function[_qp]) * rho_m + _heaviside_function[_qp] * _rho_g;
+  // ADReal rho_m = _g_s[_qp] * _rho_s + _g_l[_qp] * _rho_l;
+  // _rho[_qp] = (1 - _heaviside_function[_qp]) * rho_m + _heaviside_function[_qp] * _rho_g;
 
-  _drho_dc[_qp] = (-1.0) * rho_m + 1.0 * _rho_g;
+  // _drho_dc[_qp] = (-1.0) * rho_m + 1.0 * _rho_g;
 
-  ADReal mu_m = _mu_l * rho_m / _rho_l;
-  _mu[_qp] = (1 - _heaviside_function[_qp]) * mu_m + _heaviside_function[_qp] * _mu_g;
+  // ADReal mu_m = _mu_l * rho_m / _rho_l;
+  // _mu[_qp] = (1 - _heaviside_function[_qp]) * mu_m + _heaviside_function[_qp] * _mu_g;
 
-  ADReal f_l = _f_l[_qp] * (1 - _heaviside_function[_qp]);
+  // ADReal f_l = _f_l[_qp] * (1 - _heaviside_function[_qp]);
 
-  _permeability[_qp] = mu_m / _K0 * Utility::pow<2>(1 - f_l) / (Utility::pow<3>(f_l) + 1.0e-3);
+  // _permeability[_qp] = mu_m / _K0 * Utility::pow<2>(1 - f_l) / (Utility::pow<3>(f_l) + 1.0e-3);
+
+  _rho[_qp] = (1 - _heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _rho_s + _f_l[_qp] * _rho_l) +
+              _heaviside_function[_qp] * _rho_g;
+
+  _mu[_qp] = (1 - _heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _mu_s + _f_l[_qp] * _mu_l) +
+             _heaviside_function[_qp] * _mu_g;
+
+  _permeability[_qp] = 0.0;
 
   // _rho[_qp] = (1 - _heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _rho_s + _f_l[_qp] * _rho_l) +
   //             _heaviside_function[_qp] * _rho_g;

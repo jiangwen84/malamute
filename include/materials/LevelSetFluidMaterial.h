@@ -49,6 +49,9 @@ protected:
   /// Liquid viscosity
   const Real & _mu_l;
 
+  /// Solid viscosity
+  const Real & _mu_s;
+
   /// Liquid mass fraction
   const ADMaterialProperty<Real> & _f_l;
 

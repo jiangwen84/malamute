@@ -29,8 +29,9 @@ VariableGradientRegularization::VariableGradientRegularization(const InputParame
 ADReal
 VariableGradientRegularization::computeQpResidual()
 {
-  if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > libMesh::TOLERANCE)
-    return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]);
-  else
-    return _test[_i][_qp] * _u[_qp];
+  // if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > libMesh::TOLERANCE)
+  //   return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]);
+  // else
+  //   return _test[_i][_qp] * _u[_qp];
+  return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]);
 }
