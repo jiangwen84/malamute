@@ -10,10 +10,14 @@
     ny = 50
     elem_type = QUAD4
   []
-<<<<<<< HEAD
-=======
-  uniform_refine = 3
->>>>>>> 1b4375c (improve some models)
+  uniform_refine = 0
+[]
+
+[Adaptivity]
+  marker = marker
+  max_h_level = 4
+  #cycles_per_step = 2
+  #initial_steps = 1
 []
 
 # [Adaptivity]
@@ -71,9 +75,9 @@
   [ls]
     order = FIRST
   []
-  # [grad_ls]
-  #   family = LAGRANGE_VEC
-  # []
+  [grad_ls]
+    family = LAGRANGE_VEC
+  []
 []
 [AuxVariables]
   [ls_0]
@@ -96,7 +100,13 @@
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
     level_set = ls_0
-    epsilon = 0.00008
+    level_set_gradient = grad_ls
+    epsilon = 0.0001
+  []
+  [grad_ls]
+    type = VariableGradientRegularization
+    regularized_var = ls_0
+    variable = grad_ls
   []
 []
 [Problem]
@@ -109,12 +119,39 @@
 #     min_steps = 5
 #   []
 # []
+
+
+[Preconditioning]
+  [FSP]
+    type = FSP
+    topsplit = 'by_var'
+    full = true
+    [by_var]
+      splitting = 'grad_ls ls'
+      splitting_type = multiplicative
+      petsc_options_iname = '-ksp_type'
+      petsc_options_value = 'fgmres'
+    []
+    [grad_ls]
+      vars = 'grad_ls'
+    petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+   petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+    []
+    [ls]
+      vars = 'ls'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+    []
+  []
+[]
+
 [Executioner]
   type = Transient
   solve_type = NEWTON
   start_time = 0
   num_steps = 10
-  nl_abs_tol = 1e-14
+  nl_abs_tol = 1e-10
+  nl_forced_its = 5
   nl_max_its = 10
   line_search = none
   scheme = crank-nicolson
@@ -122,7 +159,9 @@
   # petsc_options_value = 'lu NONZERO superlu_dist preonly'
   petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
   petsc_options_value = ' asm      lu           2               31                 preonly'
-  dt = 1e-6
+  automatic_scaling = true
+  off_diagonals_in_auto_scaling = true
+  dt = 1e-8
 []
 [Outputs]
   exodus = false
