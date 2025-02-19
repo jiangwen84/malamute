@@ -3,17 +3,17 @@
     type = GeneratedMeshGenerator
     dim = 2
     xmin = 0
-    xmax = 0.01
+    xmax = 0.0025
     ymin = 0
-    ymax = 0.01
-    nx = 50
+    ymax = 0.005
+    nx = 25
     ny = 50
     elem_type = QUAD4
   []
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0.01'
+    coord = '0.0 0.005'
     input = gen
   []
   uniform_refine = 0
@@ -36,7 +36,7 @@
 # []
 [Adaptivity]
   marker = marker
-  max_h_level = 4
+  max_h_level = 3
   # cycles_per_step = 1
   [Indicators]
     [error]
@@ -67,8 +67,8 @@
     # [../]
       [./marker2]
         type = BoxMarker
-        bottom_left = '0.004 0.0035 0'
-        top_right = '0.006 0.0065 0'
+        bottom_left = '0.00075 0.001 0'
+        top_right = '0.00175 0.004 0'
         inside = refine
         outside = do_nothing
       [../]
@@ -113,8 +113,8 @@
   [ls_exact]
     type = LevelSetOlssonPlane
     epsilon = 0.0001
-    point = '0.005 0.005 0'
-    normal = '0 1 0'
+    point = '0.0025 0.0025 0'
+    normal = '0 -1 0'
   []
 []
 
@@ -137,12 +137,12 @@
     boundary = 'pinned_node'
     value = 0
   []
- [temp]
-  type = DirichletBC
-  value = 300
-  boundary = bottom
-  variable = temp
- []
+#  [temp]
+#   type = DirichletBC
+#   value = 300
+#   boundary = bottom
+#   variable = temp
+#  []
 []
 [Kernels]
   [curvature]
@@ -164,19 +164,19 @@
   # [level_set_reinit]
   #   type = LevelSetOlssonOneStepReinitialization
   #   variable = ls
-  #   reinit_speed = 1e-3
+  #   reinit_speed = 1e-4
   #   epsilon = 0.0001
   # []
-  [level_set_advection_supg]
-    type = LevelSetAdvectionSUPG
-    velocity = velocity
-    variable = ls
-[]
-  [level_set_time_supg]
-    type = LevelSetTimeDerivativeSUPG
-    velocity = velocity
-    variable = ls
-  []
+#   [level_set_advection_supg]
+#     type = LevelSetAdvectionSUPG
+#     velocity = velocity
+#     variable = ls
+# []
+#   [level_set_time_supg]
+#     type = LevelSetTimeDerivativeSUPG
+#     velocity = velocity
+#     variable = ls
+#   []
   [level_set_advection]
     type = LevelSetAdvection
     velocity = velocity
@@ -269,23 +269,23 @@
   [thermal]
     type = LevelSetThermalMaterial
     temperature = temp
-    c_g = 600
-    c_s = 400
-    c_l = 400
-    k_g = 0.02
-    k_s = 40
-    k_l = 40
-    solidus_temperature = 1350
-    latent_heat = 2.5e5
+    c_g = 680
+    c_s = 670
+    c_l = 730
+    k_g = 0.028
+    k_s = 21
+    k_l = 29
+    solidus_temperature = 1878
+    latent_heat = 2.9e5
     outputs = all
   []
   [mushy]
     type = MushyZoneMaterial
     temperature = temp
-    liquidus_temperature = 1400
-    solidus_temperature = 1350
-    rho_s = 7000
-    rho_l = 7000
+    liquidus_temperature = 1928
+    solidus_temperature = 1878
+    rho_s = 4400
+    rho_l = 4400
     outputs = all
   []
   [delta]
@@ -308,10 +308,10 @@
     alpha = .1
     temperature = temp
     curvature = curvature
-    surface_tension = 1.169 #1.169
-    thermal_capillary = -4.3e-4
-    rho_l = 7000
-    rho_g = 1.184
+    surface_tension = 1.68 #1.169
+    thermal_capillary = -2.6e-4
+    rho_l = 4400
+    rho_g = 0.894
     outputs = all
     output_properties = melt_pool_mass_rate
     cp_name = specific_heat
@@ -321,20 +321,22 @@
     type = INSMeltPoolMassTransferMaterial
     temperature = temp
     Boltzmann_constant = 1.38064852e-23
-    vaporization_latent_heat = 6.1e6
+    vaporization_latent_heat = 9.6e6
     atomic_weight = 97.43e-27
-    vaporization_temperature = 3134
+    mole_mass = 62.2
+    vaporization_temperature = 3533
     reference_pressure = 1.01e5 #1.01e5
+    R_constant = 8.314
     outputs = all
   []
   [fluid]
     type = LevelSetFluidMaterial
-    rho_g = 1.184
-    rho_s = 7000
-    rho_l = 7000
-    mu_g = 1e-5
-    mu_l = 1.6e-3
-    mu_s = 1
+    rho_g = 0.894
+    rho_s = 4400
+    rho_l = 4400
+    mu_g = 1.5e-5
+    mu_l = 5e-3
+    mu_s = 1e3
     permeability_constant = 1e-8
     outputs = all
   []
@@ -467,10 +469,10 @@
     []
     [curvature]
       vars = 'curvature ls'
-      # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
-      # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
-            petsc_options_iname = '-pc_type -ksp_type'
-      petsc_options_value = '     hypre  preonly'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+      # petsc_options_iname = '-pc_type -ksp_type'
+      # petsc_options_value = '     hypre  preonly'
     []
     # [ls]
     #   vars = 'ls'

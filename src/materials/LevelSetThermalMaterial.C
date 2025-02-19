@@ -72,10 +72,10 @@ LevelSetThermalMaterial::computeQpProperties()
   ADReal h_m = c_m * _temp[_qp] + f_l * (1 - _heaviside_function[_qp]) * delta_l;
   ADReal h_g = _c_g * _temp[_qp];
 
-  _h[_qp] = (1 - _heaviside_function[_qp]) * ((1 - _f_l[_qp]) * h_m + _f_l[_qp] * h_m) +
-            _heaviside_function[_qp] * h_g;
-  _k[_qp] = (1 - _heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _k_s + _f_l[_qp] * _k_l) +
-            _heaviside_function[_qp] * _k_g;
-  _cp[_qp] = (1 - _heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _c_s + _f_l[_qp] * _c_s) +
-             _heaviside_function[_qp] * _c_g;
+  _h[_qp] = (_heaviside_function[_qp]) * ((1 - _f_l[_qp]) * h_m + _f_l[_qp] * h_m) +
+            (1.0 - _heaviside_function[_qp]) * h_g;
+  _k[_qp] = (_heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _k_s + _f_l[_qp] * _k_l) +
+            (1.0 - _heaviside_function[_qp]) * _k_g;
+  _cp[_qp] = (_heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _c_s + _f_l[_qp] * _c_l) +
+             (1.0 - _heaviside_function[_qp]) * _c_g;
 }

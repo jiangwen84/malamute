@@ -83,19 +83,21 @@ INSMeltPoolMaterial::computeQpProperties()
   surface_tension_term =
       _sigma * _curvature[_qp] * (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE));
 
-  thermalcapillary_term = proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp];
+  thermalcapillary_term = proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp] *
+                          (2.0 * _rho[_qp] / (_rho_l + _rho_g));
 
   _melt_pool_momentum_source[_qp] +=
       thermalcapillary_term + surface_tension_term + evaporation_term + darcy_term;
 
   // Recoil Pressure
-  _melt_pool_momentum_source[_qp] -=
+  _melt_pool_momentum_source[_qp] +=
       0.55 * _saturated_vapor_pressure[_qp] * (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE));
   // }
 
   _momentum_strong_residual[_qp] -= _melt_pool_momentum_source[_qp];
 
-  _mass_strong_residual[_qp] +=
+  // +
+  _mass_strong_residual[_qp] -=
       _melt_pool_mass_rate[_qp] * normal * (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
 
   // _mass_strong_residual[_qp] +=

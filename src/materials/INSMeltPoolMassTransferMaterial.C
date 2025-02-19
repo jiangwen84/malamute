@@ -18,7 +18,9 @@ INSMeltPoolMassTransferMaterial::validParams()
   params.addClassDescription("Computes extra residuals from mass transfer for the INS equations.");
   params.addRequiredCoupledVar("temperature", "Temperature variable");
   params.addRequiredParam<Real>("atomic_weight", "Atomic weight of metal.");
+  params.addRequiredParam<Real>("mole_mass", "Mole mass of metal.");
   params.addRequiredParam<Real>("Boltzmann_constant", "Stefan Boltzmann constant.");
+  params.addRequiredParam<Real>("R_constant", "R constant.");
   params.addParam<Real>("retrodiffusion_coefficient", 0, "Retrodiffusion coefficient.");
   params.addRequiredParam<Real>("vaporization_latent_heat", "Latent heat of vaporization.");
   params.addRequiredParam<Real>("vaporization_temperature", "Vaporization temperature.");
@@ -32,7 +34,9 @@ INSMeltPoolMassTransferMaterial::INSMeltPoolMassTransferMaterial(const InputPara
     _melt_pool_mass_rate(declareADProperty<Real>("melt_pool_mass_rate")),
     _dmelt_pool_mass_rate_dT(declareADProperty<Real>("dmelt_pool_mass_rate_dT")),
     _m(getParam<Real>("atomic_weight")),
+    _m_mol(getParam<Real>("mole_mass")),
     _boltzmann(getParam<Real>("Boltzmann_constant")),
+    _R(getParam<Real>("R_constant")),
     _beta_r(getParam<Real>("retrodiffusion_coefficient")),
     _Lv(getParam<Real>("vaporization_latent_heat")),
     _vaporization_temperature(getParam<Real>("vaporization_temperature")),
@@ -44,22 +48,38 @@ INSMeltPoolMassTransferMaterial::INSMeltPoolMassTransferMaterial(const InputPara
 void
 INSMeltPoolMassTransferMaterial::computeQpProperties()
 {
+  // _saturated_vapor_pressure[_qp] =
+  //     _p0 * std::exp(_m * _Lv / _boltzmann / _vaporization_temperature *
+  //                    (1 - _vaporization_temperature / _temp[_qp]));
+
+  // _melt_pool_mass_rate[_qp] = std::sqrt(_m / (2 * libMesh::pi * _boltzmann)) *
+  //                             _saturated_vapor_pressure[_qp] / std::sqrt(_temp[_qp]) *
+  //                             (1 - _beta_r);
+
+  // auto saturated_vapor_pressure_dT = _p0 *
+  //                                    std::exp(_m * _Lv / _boltzmann / _vaporization_temperature *
+  //                                             (1 - _vaporization_temperature / _temp[_qp])) *
+  //                                    (_m * _Lv / _boltzmann / _vaporization_temperature) *
+  //                                    _vaporization_temperature / Utility::pow<2>(_temp[_qp]);
+
+  // _dmelt_pool_mass_rate_dT[_qp] =
+  //     std::sqrt(_m / (2 * libMesh::pi * _boltzmann)) * (1 - _beta_r) *
+  //     (saturated_vapor_pressure_dT / std::sqrt(_temp[_qp]) -
+  //      0.5 * _saturated_vapor_pressure[_qp] / std::sqrt(Utility::pow<3>(_temp[_qp])));
+
   _saturated_vapor_pressure[_qp] =
-      _p0 * std::exp(_m * _Lv / _boltzmann / _vaporization_temperature *
-                     (1 - _vaporization_temperature / _temp[_qp]));
+      _p0 * std::exp(-_m_mol * _Lv / _R * (1.0 / _temp[_qp] - 1.0 / _vaporization_temperature));
 
-  _melt_pool_mass_rate[_qp] = std::sqrt(_m / (2 * libMesh::pi * _boltzmann)) *
-                              _saturated_vapor_pressure[_qp] / std::sqrt(_temp[_qp]) *
-                              (1 - _beta_r);
+  _melt_pool_mass_rate[_qp] = 0.82 * _saturated_vapor_pressure[_qp] *
+                              std::sqrt(_m_mol / (2 * libMesh::pi * _R * _temp[_qp]));
 
-  auto saturated_vapor_pressure_dT = _p0 *
-                                     std::exp(_m * _Lv / _boltzmann / _vaporization_temperature *
-                                              (1 - _vaporization_temperature / _temp[_qp])) *
-                                     (_m * _Lv / _boltzmann / _vaporization_temperature) *
-                                     _vaporization_temperature / Utility::pow<2>(_temp[_qp]);
+  auto saturated_vapor_pressure_dT =
+      _p0 * std::exp(-_m_mol * _Lv / _R * (1.0 / _temp[_qp] - 1.0 / _vaporization_temperature)) *
+      (_m_mol * _Lv / _R / (_temp[_qp] * _temp[_qp]));
 
   _dmelt_pool_mass_rate_dT[_qp] =
-      std::sqrt(_m / (2 * libMesh::pi * _boltzmann)) * (1 - _beta_r) *
-      (saturated_vapor_pressure_dT / std::sqrt(_temp[_qp]) -
-       0.5 * _saturated_vapor_pressure[_qp] / std::sqrt(Utility::pow<3>(_temp[_qp])));
+      0.82 * saturated_vapor_pressure_dT * std::sqrt(_m_mol / (2 * libMesh::pi * _R * _temp[_qp])) +
+      0.82 * _saturated_vapor_pressure[_qp] *
+          (0.5 / std::sqrt(_m_mol / (2 * libMesh::pi * _R * _temp[_qp])) *
+           (_m_mol / (2 * libMesh::pi * _R) / (-_temp[_qp] * _temp[_qp])));
 }

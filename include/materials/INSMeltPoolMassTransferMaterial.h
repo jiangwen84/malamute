@@ -34,8 +34,14 @@ protected:
   /// Atomic weight
   const Real & _m;
 
+  /// Mole mass
+  const Real & _m_mol;
+
   /// Boltzmann constant
   const Real & _boltzmann;
+
+  /// R constant
+  const Real & _R;
 
   /// Retrodiffusion coefficient
   const Real & _beta_r;

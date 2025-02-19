@@ -16,7 +16,7 @@
     coord = '0.0 0.01'
     input = gen
   []
-  uniform_refine = 3
+  uniform_refine = 0
 []
 # [Adaptivity]
 #   steps = 3
@@ -36,7 +36,7 @@
 # []
 [Adaptivity]
   marker = marker
-  max_h_level = 3
+  max_h_level = 4
   # cycles_per_step = 1
   [Indicators]
     [error]
@@ -53,18 +53,25 @@
       type = ComboMarker
       markers = 'marker1 marker2'
     [../]
-    [marker1]
-      type = ErrorFractionMarker
-      coarsen = 0.01
-      refine = 0.1
-      indicator = error
-    []
-    [./marker2]
-      type = ValueThresholdMarker
-      coarsen = 800
-      variable = temp
-      refine = 900
-    [../]
+      [marker1]
+        type = ValueRangeMarker
+        lower_bound = 0.05
+        upper_bound = 0.95
+        variable = ls
+      []
+    # [./marker2]
+    #   type = ValueThresholdMarker
+    #   coarsen = 800
+    #   variable = temp
+    #   refine = 900
+    # [../]
+      [./marker2]
+        type = BoxMarker
+        bottom_left = '0.004 0.0035 0'
+        top_right = '0.006 0.0065 0'
+        inside = refine
+        outside = do_nothing
+      [../]
   []
 []
 [ICs]
@@ -97,36 +104,11 @@
   [curvature]
   []
 []
-<<<<<<< HEAD
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-[Functions]
-  [ls_exact]
-    type = LevelSetOlssonPlane
-    epsilon = 0.00004
-    point = '0.005 0.005 0'
-    normal = '0 1 0'
-  []
-=======
-=======
-=======
->>>>>>> 1b4375c (improve some models)
-# [AuxVariables]
-#   [curvature]
-#     initial_condition = 0
-#   []
-# []
-<<<<<<< HEAD
+[Problem]
+  type = LevelSetProblem
+[]
 
->>>>>>> 4ae676b (without using regularization for level set gradient)
-[Functions/ls_exact]
-  type = LevelSetOlssonPlane
-  epsilon = 0.00004
-  point = '0.005 0.005 0'
-  normal = '0 1 0'
->>>>>>> 7de9c76 (add ray-tracing and testing)
-=======
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
@@ -134,27 +116,33 @@
     point = '0.005 0.005 0'
     normal = '0 1 0'
   []
->>>>>>> 1b4375c (improve some models)
 []
+
 [BCs]
   [no_slip]
     type = ADVectorFunctionDirichletBC
     variable = velocity
-    boundary = 'bottom left right'
+    boundary = 'bottom left right top'
   []
-  [no_bc]
-    type = INSADMomentumNoBCBC
-    variable = velocity
-    viscous_form = 'traction'
-    boundary = 'top'
-    pressure = p
-  []
+  # [no_bc]
+  #   type = INSADMomentumNoBCBC
+  #   variable = velocity
+  #   viscous_form = 'traction'
+  #   boundary = 'top'
+  #   pressure = p
+  # []
   [pressure_pin]
     type = DirichletBC
     variable = p
     boundary = 'pinned_node'
     value = 0
   []
+ [temp]
+  type = DirichletBC
+  value = 300
+  boundary = bottom
+  variable = temp
+ []
 []
 [Kernels]
   [curvature]
@@ -162,7 +150,7 @@
     #level_set_regularized_gradient = grad_ls
     level_set = ls
     variable = curvature
-    varepsilon = 4e-3
+    varepsilon = 4e-5
   []
   # [grad_ls]
   #   type = VariableGradientRegularization
@@ -173,12 +161,12 @@
     type = ADTimeDerivative
     variable = ls
   []
-  [level_set_reinit]
-    type = LevelSetOlssonOneStepReinitialization
-    variable = ls
-    reinit_speed = 1e-3
-    epsilon = 0.00008
-  []
+  # [level_set_reinit]
+  #   type = LevelSetOlssonOneStepReinitialization
+  #   variable = ls
+  #   reinit_speed = 1e-3
+  #   epsilon = 0.00008
+  # []
 #   [level_set_advection_supg]
 #     type = LevelSetAdvectionSUPG
 #     velocity = velocity
@@ -237,7 +225,8 @@
     rho_l = 8000
     rho_g = 1.184
     vaporization_latent_heat = 6.1e6
-    # laser_deposition = deposition
+    laser_deposition = deposition
+    laser_deposition_number = deposition_number
   []
   [mass]
     type = INSADMass
@@ -283,7 +272,7 @@
     c_g = 600
     c_s = 400
     c_l = 400
-    k_g = 10
+    k_g = 0.02
     k_s = 40
     k_l = 40
     solidus_temperature = 1350
@@ -321,7 +310,7 @@
     curvature = curvature
     surface_tension = 1.169 #1.169
     thermal_capillary = -4.3e-4
-    rho_l = 8000
+    rho_l = 7000
     rho_g = 1.184
     outputs = all
     output_properties = melt_pool_mass_rate
@@ -344,96 +333,108 @@
     rho_s = 7000
     rho_l = 7000
     mu_g = 1e-5
-    mu_l = 0.1
+    mu_l = 1.6e-3
+    mu_s = 1
     permeability_constant = 1e-8
     outputs = all
   []
 []
-# [RayKernels]
-#   [refraction]
-#     type = LaserReflectionRayKernel
-#     phase = ls
-#     refractive_index = refractive_index
-#   []
-#   [deposition]
-#     type = LaserDepositionRayKernel
-#     variable = deposition
-#     depends_on = refraction
-#     phase = ls
-#   []
-# []
-# [AuxVariables]
-#   [refractive_index]
-#   []
-#   [deposition]
-#     order = CONSTANT
-#     family = MONOMIAL
-#   []
-# []
-# [UserObjects/study]
-#   type = ConeRayStudy
-#   start_points = '0.005 0.0052 0'
-#   directions = '0 -1 0'
-#   half_cone_angles = 20
-#   ray_data_name = weight
-#   azimuthal_quad_orders = 200
-#   # Must be set with RayKernels that
-#   # contribute to the residual
-#   execute_on = TIMESTEP_BEGIN
-#   # For outputting Rays
-#   always_cache_traces = true
-#   data_on_cache_traces = true
-# []
 
-# [MultiApps]
-#   [reinit]
-#     type = LevelSetReinitializationMultiApp
-#     input_files = 'reinit.i'
-#     execute_on = TIMESTEP_END
-#   []
-# []
-# [Transfers]
-#   # [./marker_to_sub]
-#   #   type = LevelSetMeshRefinementTransfer
-#   #   to_multi_app = reinit
-#   #   source_variable = marker
-#   #   variable = marker
-#   # [../]
-#   [to_sub]
-#     type = MultiAppGeometricInterpolationTransfer
-#     source_variable = ls
-#     variable = ls
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-#   # [to_sub_temp]
-#   #   type = MultiAppCopyTransfer
-#   #   source_variable = temp
-#   #   variable = temp
-#   #   to_multi_app = reinit
-#   #   execute_on = 'timestep_end'
-#   # []
-#   [to_sub_init]
-#     type = MultiAppGeometricInterpolationTransfer
-#     source_variable = ls
-#     variable = ls_0
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-#   [from_sub]
-#     type = MultiAppGeometricInterpolationTransfer
-#     source_variable = ls
-#     variable = ls
-#     from_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-# []
-# [RayBCs]
-#   [kill]
-#     type = KillRayBC
-#     boundary = 'top right bottom left'
-#   []
-# []
+
+[RayKernels]
+  [refraction]
+    type = LaserReflectionRayKernel
+    phase = ls
+    refractive_index = refractive_index
+  []
+  [deposition]
+    type = LaserDepositionRayKernel
+    variable = deposition
+    depends_on = refraction
+    phase = ls
+  []
+  [deposition_number]
+    type = LaserDepositionNumberRayKernel
+    variable = deposition_number
+    depends_on = refraction
+    phase = ls
+  []
+[]
+[AuxVariables]
+  [refractive_index]
+  []
+  [deposition]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [deposition_number]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+[]
+[UserObjects/study]
+  type = LaserRayStudy
+  execute_on = TIMESTEP_BEGIN
+
+  vertex_to_vertex = false
+  centroid_to_vertex = false
+  centroid_to_centroid = false
+
+  always_cache_traces = true
+  data_on_cache_traces = true
+[]
+
+[MultiApps]
+  [reinit]
+    type = LevelSetReinitializationMultiApp
+    input_files = 'reinit.i'
+    execute_on = TIMESTEP_END
+  []
+[]
+[Transfers]
+  [./marker_to_sub]
+    type = LevelSetMeshRefinementTransfer
+    to_multi_app = reinit
+    source_variable = marker
+    variable = marker
+  [../]
+  [to_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+  # [to_sub_temp]
+  #   type = MultiAppCopyTransfer
+  #   source_variable = temp
+  #   variable = temp
+  #   to_multi_app = reinit
+  #   execute_on = 'timestep_end'
+  # []
+  [to_sub_init]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls_0
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+  [from_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    from_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+[]
+
+[RayBCs]
+  [kill]
+    type = KillRayBC
+    boundary = 'top right bottom left'
+  []
+[]
+
 [Preconditioning]
   active = 'FSP'
   [SMP]
@@ -447,7 +448,7 @@
     topsplit = 'by_var'
     full = false
     [by_var]
-      splitting = 'up temp curvature ls'
+      splitting = 'up temp curvature'
       splitting_type = multiplicative
       petsc_options_iname = '-ksp_type'
       petsc_options_value = 'fgmres'
@@ -465,21 +466,21 @@
       petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
     []
     [curvature]
-      vars = 'curvature'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
-      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
-      #       petsc_options_iname = '-pc_type -ksp_type'
-      # petsc_options_value = '     hypre  preonly'
-    []
-    [ls]
-      vars = 'ls'
-      petsc_options_iname = '-pc_type -ksp_type'
-      petsc_options_value = 'hypre  preonly'
+      vars = 'curvature ls'
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
       # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
-      # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
-      # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+            petsc_options_iname = '-pc_type -ksp_type'
+      petsc_options_value = '     hypre  preonly'
     []
+    # [ls]
+    #   vars = 'ls'
+    #   petsc_options_iname = '-pc_type -ksp_type'
+    #   petsc_options_value = 'hypre  preonly'
+    #   # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+    #   # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+    #   # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+    #   # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+    # []
   []
   # [FSP]
   #   type = FSP
@@ -531,13 +532,13 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 0.001
+  dt = 1e-5
   nl_abs_tol = 1e-6
   num_steps = 1000
   nl_forced_its = 2
   line_search = 'none'
-  # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
-  # petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
+  petsc_options_value = 'lu NONZERO superlu_dist preonly'
   # petsc_options_iname = '-pc_type  -sub_pc_type -pc_factor_shift_type -sub_pc_factor_shift_amount'
   # petsc_options_value = 'asm             lu NONZERO 1e-10'
   l_max_its = 50
@@ -548,9 +549,9 @@
 []
 [Outputs]
   exodus = true
-  # [rays]
-  #   type = RayTracingExodus
-  #   study = study
-  #   execute_on = TIMESTEP_END
-  # []
+  [rays]
+    type = RayTracingExodus
+    study = study
+    execute_on = TIMESTEP_END
+  []
 []

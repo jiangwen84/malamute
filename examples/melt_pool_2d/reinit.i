@@ -3,10 +3,10 @@
     type = GeneratedMeshGenerator
     dim = 2
     xmin = 0
-    xmax = 0.01
+    xmax = 0.0025
     ymin = 0
-    ymax = 0.01
-    nx = 50
+    ymax = 0.005
+    nx = 25
     ny = 50
     elem_type = QUAD4
   []
@@ -15,7 +15,7 @@
 
 [Adaptivity]
   marker = marker
-  max_h_level = 4
+  max_h_level = 3
   #cycles_per_step = 2
   #initial_steps = 1
 []
@@ -149,7 +149,7 @@
   type = Transient
   solve_type = NEWTON
   start_time = 0
-  num_steps = 10
+  num_steps = 20
   nl_abs_tol = 1e-10
   nl_forced_its = 5
   nl_max_its = 10
@@ -157,8 +157,8 @@
   scheme = crank-nicolson
   # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
   # petsc_options_value = 'lu NONZERO superlu_dist preonly'
-  petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
-  petsc_options_value = ' asm      lu           2               31                 preonly'
+  # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
+  # petsc_options_value = ' asm      lu           2               31                 preonly'
   automatic_scaling = true
   off_diagonals_in_auto_scaling = true
   dt = 1e-8

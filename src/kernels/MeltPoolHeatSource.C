@@ -88,9 +88,11 @@ MeltPoolHeatSource::precomputeQpResidual()
   ADReal radiation =
       -_stefan_boltzmann * _varepsilon * (Utility::pow<4>(_u[_qp]) - Utility::pow<4>(_T0));
 
-  ADReal heat_source = (convection + radiation) * _delta_function[_qp];
+  ADReal evap = _Lv * _melt_pool_mass_rate[_qp];
 
-  heat_source += laser_source;
+  ADReal heat_source = (convection + radiation + laser_source + evap) * _delta_function[_qp];
+
+  // heat_source += laser_source;
 
   // ADReal heat_source = laser_source * _delta_function[_qp];
 

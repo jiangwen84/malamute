@@ -143,10 +143,10 @@ LaserRayStudy::defineRays()
   // 2D
 
   unsigned int nx = 300;
-  Real r0 = 0.3e-3;
-  Real xmin = 0.0047;
-  Real xmax = 0.0053;
-  Real Q = 5000;
+  Real r0 = 0.140e-3;
+  Real xmin = 0.00111;
+  Real xmax = 0.00139;
+  Real Q = 1500;
   Real size = (xmax - xmin) / nx;
   unsigned int num_rays = 0;
 
@@ -168,7 +168,9 @@ LaserRayStudy::defineRays()
     }
   }
 
-  Real Q_bar = Q / _mesh.elemPtr(0)->hmin();
+  // Real Q_bar = Q / _mesh.elemPtr(0)->hmin();
+
+  Real Q_bar = Q;
 
   num_rays = 0;
 
@@ -180,7 +182,7 @@ LaserRayStudy::defineRays()
       num_rays++;
       names.push_back("ray_" + std::to_string(num_rays));
       x_coords.push_back(xcell);
-      start_points.push_back(Point(xcell, .01, 0));
+      start_points.push_back(Point(xcell, .005, 0));
       directions.push_back(Point(0, -1, 0));
       Real energy = 2.0 * Q_bar / (r0 * r0 * libMesh::pi) *
                     std::exp(-2.0 / r0 / r0 * ((xcell - xc) * (xcell - xc)));
