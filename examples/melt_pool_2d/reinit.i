@@ -3,14 +3,14 @@
     type = GeneratedMeshGenerator
     dim = 2
     xmin = 0
-    xmax = 0.0025
+    xmax = 0.0015
     ymin = 0
-    ymax = 0.005
+    ymax = 0.003
     nx = 25
     ny = 50
     elem_type = QUAD4
   []
-  uniform_refine = 0
+  uniform_refine = 1
 []
 
 [Adaptivity]
@@ -101,7 +101,7 @@
     variable = ls
     level_set = ls_0
     level_set_gradient = grad_ls
-    epsilon = 0.0001
+    epsilon = 0.00001
   []
   [grad_ls]
     type = VariableGradientRegularization
@@ -149,7 +149,7 @@
   type = Transient
   solve_type = NEWTON
   start_time = 0
-  num_steps = 20
+  num_steps = 10
   nl_abs_tol = 1e-10
   nl_forced_its = 5
   nl_max_its = 10

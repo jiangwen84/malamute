@@ -66,8 +66,8 @@ INSMeltPoolMaterial::computeQpProperties()
   ADRankTwoTensor proj;
   ADRealVectorValue normal = ADRealVectorValue(0.0);
 
-  // darcy_term = -_permeability[_qp] * (1 - _heaviside_function[_qp]) * _velocity[_qp];
-  darcy_term = 0.0;
+  darcy_term = -_permeability[_qp] * _velocity[_qp];
+  // darcy_term = 0.0;
   evaporation_term =
       1.0 / (_rho[_qp] * _rho[_qp]) *
       (2 * _melt_pool_mass_rate[_qp] * _rho[_qp] * _dmelt_pool_mass_rate_dT[_qp] * _grad_temp[_qp] -
@@ -97,7 +97,7 @@ INSMeltPoolMaterial::computeQpProperties()
   _momentum_strong_residual[_qp] -= _melt_pool_momentum_source[_qp];
 
   // +
-  _mass_strong_residual[_qp] -=
+  _mass_strong_residual[_qp] +=
       _melt_pool_mass_rate[_qp] * normal * (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
 
   // _mass_strong_residual[_qp] +=

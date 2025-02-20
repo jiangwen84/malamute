@@ -60,7 +60,8 @@ LevelSetFluidMaterial::computeQpProperties()
 
   // ADReal f_l = _f_l[_qp] * (1 - _heaviside_function[_qp]);
 
-  // _permeability[_qp] = mu_m / _K0 * Utility::pow<2>(1 - f_l) / (Utility::pow<3>(f_l) + 1.0e-3);
+  _permeability[_qp] =
+      1.0 / _K0 * Utility::pow<2>(1 - _f_l[_qp]) / (Utility::pow<3>(_f_l[_qp]) + 1.0e-3);
 
   _rho[_qp] = (_heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _rho_s + _f_l[_qp] * _rho_l) +
               (1 - _heaviside_function[_qp]) * _rho_g;

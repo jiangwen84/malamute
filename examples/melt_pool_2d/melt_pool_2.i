@@ -3,9 +3,9 @@
     type = GeneratedMeshGenerator
     dim = 2
     xmin = 0
-    xmax = 0.0025
+    xmax = 0.0015
     ymin = 0
-    ymax = 0.005
+    ymax = 0.003
     nx = 25
     ny = 50
     elem_type = QUAD4
@@ -13,10 +13,10 @@
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0.005'
+    coord = '0.0 0.003'
     input = gen
   []
-  uniform_refine = 0
+  uniform_refine = 1
 []
 # [Adaptivity]
 #   steps = 3
@@ -67,10 +67,10 @@
     # [../]
       [./marker2]
         type = BoxMarker
-        bottom_left = '0.00075 0.001 0'
-        top_right = '0.00175 0.004 0'
+        bottom_left = '0.0005 0.001 0'
+        top_right = '0.001 0.002 0'
         inside = refine
-        outside = do_nothing
+        outside = coarsen
       [../]
   []
 []
@@ -112,8 +112,8 @@
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
-    epsilon = 0.0001
-    point = '0.0025 0.0025 0'
+    epsilon = 0.000025
+    point = '0.0015 0.0015 0'
     normal = '0 -1 0'
   []
 []
@@ -122,7 +122,7 @@
   [no_slip]
     type = ADVectorFunctionDirichletBC
     variable = velocity
-    boundary = 'bottom left right top'
+    boundary = 'bottom left right'
   []
   # [no_bc]
   #   type = INSADMomentumNoBCBC
@@ -451,7 +451,7 @@
     full = false
     [by_var]
       splitting = 'up temp curvature'
-      splitting_type = multiplicative
+      splitting_type = additive
       petsc_options_iname = '-ksp_type'
       petsc_options_value = 'fgmres'
     []
@@ -502,10 +502,10 @@
   #   []
   #   [u]
   #     vars = 'velocity'
-  #     petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
-  #     petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
-  #     # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
-  #     # petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+  #     # petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
+  #     # petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
+  #     petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
+  #     petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
   #   []
   #   [p]
   #      vars = 'p'
@@ -544,7 +544,7 @@
   # petsc_options_iname = '-pc_type  -sub_pc_type -pc_factor_shift_type -sub_pc_factor_shift_amount'
   # petsc_options_value = 'asm             lu NONZERO 1e-10'
   l_max_its = 50
-  nl_max_its = 15
+  nl_max_its = 20
   nl_div_tol = 1e20
   automatic_scaling = true
   off_diagonals_in_auto_scaling = true
