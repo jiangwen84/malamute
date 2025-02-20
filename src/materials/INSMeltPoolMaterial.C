@@ -24,6 +24,8 @@ INSMeltPoolMaterial::validParams()
   params.addRequiredParam<Real>("thermal_capillary", "Thermalcapillary coefficient.");
   params.addRequiredParam<Real>("rho_l", "Liquid density.");
   params.addRequiredParam<Real>("rho_g", "Gas density.");
+  params.addRequiredParam<Real>("fusion_latent_heat", "Latent heat of fusion.");
+  params.addCoupledVar("fluid_mass_fraction", "Fluid mass fraction variable");
   return params;
 }
 
@@ -47,7 +49,10 @@ INSMeltPoolMaterial::INSMeltPoolMaterial(const InputParameters & parameters)
     _saturated_vapor_pressure(getADMaterialProperty<Real>("saturated_vapor_pressure")),
     _f_l(getADMaterialProperty<Real>("liquid_mass_fraction")),
     _drho_dc(getADMaterialProperty<Real>("drho_dc")),
-    _dmelt_pool_mass_rate_dT(getADMaterialProperty<Real>("dmelt_pool_mass_rate_dT"))
+    _dmelt_pool_mass_rate_dT(getADMaterialProperty<Real>("dmelt_pool_mass_rate_dT")),
+    _Lm(getParam<Real>("fusion_latent_heat")),
+    _grad_fl(coupledGradient("fluid_mass_fraction")),
+    _f_l_old(getMaterialPropertyOld<Real>("liquid_mass_fraction"))
 {
 }
 
@@ -103,4 +108,8 @@ INSMeltPoolMaterial::computeQpProperties()
   // _mass_strong_residual[_qp] +=
   //     -_melt_pool_mass_rate[_qp] * _delta_function[_qp] * (_rho_l - _rho_g) / _rho[_qp] /
   //     _rho[_qp];
+
+  _temperature_advective_strong_residual[_qp] +=
+      _rho[_qp] * _Lm * _velocity[_qp] * _grad_fl[_qp] +
+      _rho[_qp] * _Lm * ((_f_l[_qp] - _f_l_old[_qp]) / _dt);
 }
