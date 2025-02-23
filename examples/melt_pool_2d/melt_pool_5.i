@@ -36,7 +36,7 @@
 # []
 [Adaptivity]
   marker = marker
-  max_h_level = 3
+  max_h_level = 4
   # cycles_per_step = 1
   [Indicators]
     [error1]
@@ -289,7 +289,7 @@
     c_s = 670
     c_l = 730
     k_g = 0.028
-    k_s = 30#21
+    k_s = 21
     k_l = 29
     solidus_temperature = 1878
     latent_heat = 2.9e5

@@ -50,18 +50,18 @@ LevelSetFluidMaterial::LevelSetFluidMaterial(const InputParameters & parameters)
 void
 LevelSetFluidMaterial::computeQpProperties()
 {
-  // ADReal rho_m = _g_s[_qp] * _rho_s + _g_l[_qp] * _rho_l;
+  ADReal rho_m = _g_s[_qp] * _rho_s + _g_l[_qp] * _rho_l;
   // _rho[_qp] = (1 - _heaviside_function[_qp]) * rho_m + _heaviside_function[_qp] * _rho_g;
 
   // _drho_dc[_qp] = (-1.0) * rho_m + 1.0 * _rho_g;
 
-  // ADReal mu_m = _mu_l * rho_m / _rho_l;
-  // _mu[_qp] = (1 - _heaviside_function[_qp]) * mu_m + _heaviside_function[_qp] * _mu_g;
+  ADReal mu_m = _mu_l * rho_m / _rho_l;
+  _mu[_qp] = (1 - _heaviside_function[_qp]) * mu_m + _heaviside_function[_qp] * _mu_g;
 
   // ADReal f_l = _f_l[_qp] * (1 - _heaviside_function[_qp]);
 
   _permeability[_qp] =
-      1.0 / _K0 * Utility::pow<2>(1 - _f_l[_qp]) / (Utility::pow<3>(_f_l[_qp]) + 1.0e-3);
+      mu_m / _K0 * Utility::pow<2>(1 - _f_l[_qp]) / (Utility::pow<3>(_f_l[_qp]) + 1.0e-6);
 
   _rho[_qp] = (_heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _rho_s + _f_l[_qp] * _rho_l) +
               (1 - _heaviside_function[_qp]) * _rho_g;
@@ -69,7 +69,17 @@ LevelSetFluidMaterial::computeQpProperties()
   _mu[_qp] = (_heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _mu_s + _f_l[_qp] * _mu_l) +
              (1 - _heaviside_function[_qp]) * _mu_g;
 
-  _permeability[_qp] = 0.0;
+  if (_rho[_qp] < _rho_g)
+    _rho[_qp] = _rho_g;
+  else if (_rho[_qp] > _rho_s)
+    _rho[_qp] = _rho_s;
+
+  if (_mu[_qp] < _mu_g)
+    _mu[_qp] = _mu_g;
+  else if (_mu[_qp] > _mu_s)
+    _mu[_qp] = _mu_s;
+
+  // _permeability[_qp] = 0.0;
 
   // _rho[_qp] = (1 - _heaviside_function[_qp]) * ((1 - _f_l[_qp]) * _rho_s + _f_l[_qp] * _rho_l) +
   //             _heaviside_function[_qp] * _rho_g;

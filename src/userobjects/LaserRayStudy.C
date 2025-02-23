@@ -144,9 +144,9 @@ LaserRayStudy::defineRays()
 
   unsigned int nx = 100;
   Real r0 = 0.140e-3;
-  Real xmin = 0.00061;
-  Real xmax = 0.00089;
-  Real Q = 300;
+  Real xmin = 0.0007;
+  Real xmax = 0.0008;
+  Real Q = 400;
   Real size = (xmax - xmin) / nx;
   unsigned int num_rays = 0;
 
@@ -168,9 +168,9 @@ LaserRayStudy::defineRays()
     }
   }
 
-  // Real Q_bar = Q / _mesh.elemPtr(0)->hmin();
+  Real Q_bar = Q / _mesh.elemPtr(0)->hmin();
 
-  Real Q_bar = Q;
+  // Real Q_bar = Q;
 
   num_rays = 0;
 

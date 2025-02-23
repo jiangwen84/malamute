@@ -52,7 +52,8 @@ INSMeltPoolMaterial::INSMeltPoolMaterial(const InputParameters & parameters)
     _dmelt_pool_mass_rate_dT(getADMaterialProperty<Real>("dmelt_pool_mass_rate_dT")),
     _Lm(getParam<Real>("fusion_latent_heat")),
     _grad_fl(coupledGradient("fluid_mass_fraction")),
-    _f_l_old(getMaterialPropertyOld<Real>("liquid_mass_fraction"))
+    _f_l_old(getMaterialPropertyOld<Real>("liquid_mass_fraction")),
+    _f_l_rate(declareADProperty<Real>("liquid_mass_fraction_rate"))
 {
 }
 
@@ -71,8 +72,8 @@ INSMeltPoolMaterial::computeQpProperties()
   ADRankTwoTensor proj;
   ADRealVectorValue normal = ADRealVectorValue(0.0);
 
-  darcy_term = -_permeability[_qp] * _velocity[_qp];
-  // darcy_term = 0.0;
+  // darcy_term = -_permeability[_qp] * _velocity[_qp];
+  darcy_term = 0.0;
   evaporation_term =
       1.0 / (_rho[_qp] * _rho[_qp]) *
       (2 * _melt_pool_mass_rate[_qp] * _rho[_qp] * _dmelt_pool_mass_rate_dT[_qp] * _grad_temp[_qp] -
@@ -96,20 +97,30 @@ INSMeltPoolMaterial::computeQpProperties()
 
   // Recoil Pressure
   _melt_pool_momentum_source[_qp] +=
-      0.55 * _saturated_vapor_pressure[_qp] * (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE));
+      0.54 * _saturated_vapor_pressure[_qp] * (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE));
   // }
 
   _momentum_strong_residual[_qp] -= _melt_pool_momentum_source[_qp];
 
-  // +
-  _mass_strong_residual[_qp] +=
-      _melt_pool_mass_rate[_qp] * normal * (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
+  _mass_strong_residual[_qp] += -_melt_pool_mass_rate[_qp] * normal *
+                                (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
+
+  //   Real r = (_q_point[_qp] - Point(0.00075, 0.0015, 0)).norm();
+
+  //   Real laser_source =
+  //       1e-8 / (libMesh::pi * Utility::pow<2>(0.0001)) * std::exp(-2.0 * Utility::pow<2>(r /
+  //       0.0001));
+
+  //   _mass_strong_residual[_qp] +=
+  //       laser_source * normal * (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
 
   // _mass_strong_residual[_qp] +=
   //     -_melt_pool_mass_rate[_qp] * _delta_function[_qp] * (_rho_l - _rho_g) / _rho[_qp] /
   //     _rho[_qp];
 
-  _temperature_advective_strong_residual[_qp] +=
-      _rho[_qp] * _Lm * _velocity[_qp] * _grad_fl[_qp] +
-      _rho[_qp] * _Lm * ((_f_l[_qp] - _f_l_old[_qp]) / _dt);
+  _f_l_rate[_qp] = (_f_l[_qp] - _f_l_old[_qp]) / _dt;
+
+  // _temperature_advective_strong_residual[_qp] +=
+  //     _rho[_qp] * _Lm * _velocity[_qp] * _grad_fl[_qp] +
+  //     _rho[_qp] * _Lm * ((_f_l[_qp] - _f_l_old[_qp]) / _dt);
 }

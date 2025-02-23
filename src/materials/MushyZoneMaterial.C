@@ -39,6 +39,12 @@ MushyZoneMaterial::MushyZoneMaterial(const InputParameters & parameters)
 }
 
 void
+MushyZoneMaterial::initQpStatefulProperties()
+{
+  _f_l[_qp] = 0.0;
+}
+
+void
 MushyZoneMaterial::computeQpProperties()
 {
   _f_l[_qp] = 1;

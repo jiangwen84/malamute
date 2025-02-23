@@ -24,6 +24,8 @@ public:
 protected:
   void computeQpProperties() override;
 
+  void initQpStatefulProperties() override;
+
   /// Temperature variable
   const ADVariableValue & _temp;
 

@@ -83,4 +83,6 @@ protected:
   const VariableGradient & _grad_fl;
 
   const MaterialProperty<Real> & _f_l_old;
+
+  ADMaterialProperty<Real> & _f_l_rate;
 };
