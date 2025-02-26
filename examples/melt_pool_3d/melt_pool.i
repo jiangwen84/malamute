@@ -292,7 +292,7 @@
     c_g = 680
     c_s = 670
     c_l = 730
-    k_g = 0.028
+    k_g = 10 #0.028
     k_s = 21
     k_l = 29
     solidus_temperature = 1878
@@ -448,49 +448,49 @@
   data_on_cache_traces = true
 []
 
-# [MultiApps]
-#   [reinit]
-#     type = LevelSetReinitializationMultiApp
-#     input_files = 'reinit.i'
-#     execute_on = TIMESTEP_END
-#   []
-# []
-# [Transfers]
-#   [./marker_to_sub]
-#     type = LevelSetMeshRefinementTransfer
-#     to_multi_app = reinit
-#     source_variable = marker
-#     variable = marker
-#   [../]
-#   [to_sub]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-#   # [to_sub_temp]
-#   #   type = MultiAppCopyTransfer
-#   #   source_variable = temp
-#   #   variable = temp
-#   #   to_multi_app = reinit
-#   #   execute_on = 'timestep_end'
-#   # []
-#   [to_sub_init]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls_0
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-#   [from_sub]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls
-#     from_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-# []
+[MultiApps]
+  [reinit]
+    type = LevelSetReinitializationMultiApp
+    input_files = 'reinit.i'
+    execute_on = TIMESTEP_END
+  []
+[]
+[Transfers]
+  [./marker_to_sub]
+    type = LevelSetMeshRefinementTransfer
+    to_multi_app = reinit
+    source_variable = marker
+    variable = marker
+  [../]
+  [to_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+  # [to_sub_temp]
+  #   type = MultiAppCopyTransfer
+  #   source_variable = temp
+  #   variable = temp
+  #   to_multi_app = reinit
+  #   execute_on = 'timestep_end'
+  # []
+  [to_sub_init]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls_0
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+  [from_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    from_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+[]
 
 [RayBCs]
   [kill]

@@ -15,7 +15,7 @@
 
 [Adaptivity]
   marker = marker
-  max_h_level = 3
+  max_h_level = 2
   #cycles_per_step = 2
   #initial_steps = 1
 []
@@ -134,8 +134,8 @@
     []
     [grad_ls]
       vars = 'grad_ls'
-    petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
-   petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+    petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_shift_amount'
+   petsc_options_value = ' asm      ilu           2               31 NONZERO  1e-12'
     []
     [ls]
       vars = 'ls'
