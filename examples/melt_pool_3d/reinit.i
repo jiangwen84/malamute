@@ -1,16 +1,23 @@
 [Mesh]
-  [gen]
-    type = GeneratedMeshGenerator
-    dim = 2
-    xmin = 0
-    xmax = 0.0015
-    ymin = 0
-    ymax = 0.003
-    nx = 25
-    ny = 50
-    elem_type = QUAD4
+  [./gmg]
+    type = ConcentricCircleMeshGenerator
+    num_sectors = 8
+    radii = '0.0015'
+    rings = '4'
+    has_outer_square = no
+    pitch = 1.42063
+    #portion = left_half
+    preserve_volumes = off
   []
-  uniform_refine = 1
+
+  [./extrude]
+    type = MeshExtruderGenerator
+    input = gmg
+    num_layers = 25
+    extrusion_vector = '0 0 0.006'
+    bottom_sideset = 'new_front'
+    top_sideset = 'new_back'
+  []
 []
 
 [Adaptivity]
@@ -101,7 +108,7 @@
     variable = ls
     level_set = ls_0
     level_set_gradient = grad_ls
-    epsilon = 0.000015
+    epsilon = 0.00008
   []
   [grad_ls]
     type = VariableGradientRegularization
@@ -125,7 +132,6 @@
   [FSP]
     type = FSP
     topsplit = 'by_var'
-    full = true
     [by_var]
       splitting = 'grad_ls ls'
       splitting_type = multiplicative
@@ -135,7 +141,7 @@
     [grad_ls]
       vars = 'grad_ls'
     petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_shift_amount'
-   petsc_options_value = ' asm      ilu           2               31 NONZERO  1e-12'
+   petsc_options_value = ' asm      lu           2               31 NONZERO  1e-12'
     []
     [ls]
       vars = 'ls'
@@ -161,7 +167,7 @@
   # petsc_options_value = ' asm      lu           2               31                 preonly'
   automatic_scaling = true
   off_diagonals_in_auto_scaling = true
-  dt = 1e-8
+  dt = 1e-6
 []
 [Outputs]
   exodus = false
