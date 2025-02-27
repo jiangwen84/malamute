@@ -142,143 +142,61 @@ LaserRayStudy::defineRays()
 
   // 2D
 
-  // unsigned int nx = 100;
+  unsigned int nx = 300;
   // Real r0 = 0.140e-3;
-  // Real xmin = 0.0007;
-  // Real xmax = 0.0008;
-  // Real Q = 400;
-  // Real size = (xmax - xmin) / nx;
-  // unsigned int num_rays = 0;
+  // Real xmin = 0.0004;
+  // Real xmax = 0.0006;
 
-  // Real xc = (xmax + xmin) / 2.0;
+  Real r0 = 0.15e-3;
+  Real xmin = 0.0004;
+  Real xmax = 0.0006;
 
-  // std::vector<std::string> names;
-  // std::vector<Real> x_coords;
-  // std::vector<Real> energy_rays;
-  // std::vector<Point> directions;
-  // std::vector<Point> start_points;
-
-  // for (unsigned int i = 0; i < nx; ++i)
-  // {
-
-  //   Real xcell = (i + 0.5) * size + xmin;
-  //   if (((xcell - xc) * (xcell - xc)) < r0 * r0)
-  //   {
-  //     num_rays++;
-  //   }
-  // }
-
-  // Real Q_bar = Q / _mesh.elemPtr(0)->hmin();
-
-  // // Real Q_bar = Q;
-
-  // num_rays = 0;
-
-  // for (unsigned int i = 0; i < nx; ++i)
-  // {
-  //   Real xcell = (i + 0.5) * size + xmin;
-  //   if (((xcell - xc) * (xcell - xc)) < r0 * r0)
-  //   {
-  //     num_rays++;
-  //     names.push_back("ray_" + std::to_string(num_rays));
-  //     x_coords.push_back(xcell);
-  //     start_points.push_back(Point(xcell, .003, 0));
-  //     directions.push_back(Point(0, -1, 0));
-  //     Real energy = 2.0 * Q_bar / (r0 * r0 * libMesh::pi) *
-  //                   std::exp(-2.0 / r0 / r0 * ((xcell - xc) * (xcell - xc)));
-  //     energy_rays.push_back(energy);
-  //   }
-  // }
-
-  // std::cout << "number of rays = " << num_rays << std::endl;
-
-  // for (std::size_t i = 0; i < names.size(); ++i)
-  // {
-  //   std::shared_ptr<Ray> ray = acquireRay();
-
-  //   // Point shift_x((_t - 0.02) * 0.005, 0, 0);
-
-  //   // if (_t < 0.02)
-  //   //   shift_x(0) = 0.0;
-
-  //   // Point shift_x(_t * 0.01, 0, 0);
-
-  //   ray->setStart(start_points[i]);
-
-  //   ray->setStartingDirection((directions)[i]);
-
-  //   ray->data(_energy_density_index) = energy_rays[i];
-
-  //   ray->setStartingMaxDistance(0.05);
-
-  //   _rays.emplace_back(std::move(ray));
-  // }
-
-  // return;
-
-  // 3D
-
-  unsigned int nx = 40;
-  unsigned int ny = 40;
-  Real r0 = 0.140e-3;
-  Real cut_off_r = 0.140e-3;
-  Real xmin = 0.0007;
-  Real ymin = 0.0007;
-  Real xmax = 0.0007;
-  Real ymax = 0.0008;
-
-  Real Q = 400;
+  Real Q = 100;
   Real size = (xmax - xmin) / nx;
   unsigned int num_rays = 0;
 
   Real xc = (xmax + xmin) / 2.0;
-  Real yc = (ymax + ymin) / 2.0;
 
   std::vector<std::string> names;
   std::vector<Real> x_coords;
-  std::vector<Real> y_coords;
   std::vector<Real> energy_rays;
   std::vector<Point> directions;
   std::vector<Point> start_points;
 
   for (unsigned int i = 0; i < nx; ++i)
   {
-    for (unsigned int j = 0; j < ny; ++j)
+
+    Real xcell = (i + 0.5) * size + xmin;
+    if (((xcell - xc) * (xcell - xc)) < r0 * r0)
     {
-      Real xcell = (i + 0.5) * size + xmin;
-      Real ycell = (j + 0.5) * size + ymin;
-      if (((xcell - xc) * (xcell - xc) + (ycell - yc) * (ycell - yc)) < cut_off_r * cut_off_r)
-      {
-        num_rays++;
-      }
+      num_rays++;
     }
   }
 
-  // Real Q_bar = Q * (r0 * r0 * libMesh::pi) / num_rays / _mesh.elemPtr(0)->volume();
-  Real Q_bar = Q / _mesh.elemPtr(0)->hmin() * 8.0;
+  // Real Q_bar = Q * xc * xc / _mesh.elemPtr(0)->volume() * 16.0;
+
+  std::cout << "_mesh.elemPtr(0)->hmin() = " << _mesh.elemPtr(0)->hmin() << std::endl;
+  // Real Q_bar = Q / _mesh.elemPtr(0)->hmin() * 8.0;
+
+  Real Q_bar = Q * size / (_mesh.elemPtr(0)->volume() / std::pow(2.0, 3.0));
 
   num_rays = 0;
 
   for (unsigned int i = 0; i < nx; ++i)
   {
-    for (unsigned int j = 0; j < ny; ++j)
+    Real xcell = (i + 0.5) * size + xmin;
+    if (((xcell - xc) * (xcell - xc)) < r0 * r0)
     {
-      Real xcell = (i + 0.5) * size + xmin;
-      Real ycell = (j + 0.5) * size + ymin;
-      if (((xcell - xc) * (xcell - xc) + (ycell - yc) * (ycell - yc)) < cut_off_r * cut_off_r)
-      {
-        num_rays++;
-        names.push_back("ray_" + std::to_string(num_rays));
-        x_coords.push_back(xcell);
-        y_coords.push_back(ycell);
-        start_points.push_back(Point(xcell, ycell, 0.003));
-        directions.push_back(Point(0, 0, -1));
-        Real energy =
-            2.0 * Q_bar / (r0 * r0 * libMesh::pi) *
-            std::exp(-2.0 / r0 / r0 * ((xcell - xc) * (xcell - xc) + (ycell - yc) * (ycell - yc)));
-        // Real energy = Q_bar;
-        energy_rays.push_back(energy);
-      }
+      num_rays++;
+      names.push_back("ray_" + std::to_string(num_rays));
+      x_coords.push_back(xcell);
+      // start_points.push_back(Point(xcell + 0.00040192378, .003, 0));
+      // directions.push_back(Point(-0.26794919243, -1, 0));
+      start_points.push_back(Point(xcell, .002, 0));
+      directions.push_back(Point(0, -1, 0));
+      Real energy = 2.0 * Q_bar / (r0 * r0 * libMesh::pi) *
+                    std::exp(-2.0 / r0 / r0 * ((xcell - xc) * (xcell - xc)));
+      energy_rays.push_back(energy);
     }
   }
 
@@ -288,26 +206,120 @@ LaserRayStudy::defineRays()
   {
     std::shared_ptr<Ray> ray = acquireRay();
 
-    // Point shift_x((_t - 0.28) * 0.009, 0, 0);
+    // Point shift_x((_t - 0.02) * 0.005, 0, 0);
 
-    // if (_t < 0.28)
+    // if (_t < 0.02)
     //   shift_x(0) = 0.0;
 
-    // Point shift_x(-_t * 300e-4, 0, 0);
+    // Point shift_x(_t * 0.01, 0, 0);
 
-    // ray->setStart(start_points[i] + shift_x);
     ray->setStart(start_points[i]);
 
     ray->setStartingDirection((directions)[i]);
 
     ray->data(_energy_density_index) = energy_rays[i];
 
-    ray->setStartingMaxDistance(0.03);
+    ray->setStartingMaxDistance(0.05);
 
     _rays.emplace_back(std::move(ray));
   }
 
   return;
+
+  // 3D
+
+  // unsigned int nx = 40;
+  // unsigned int ny = 40;
+  // Real r0 = 0.140e-3;
+  // Real cut_off_r = 0.140e-3;
+  // Real xmin = 0.0007;
+  // Real ymin = 0.0007;
+  // Real xmax = 0.0007;
+  // Real ymax = 0.0008;
+
+  // Real Q = 400;
+  // Real size = (xmax - xmin) / nx;
+  // unsigned int num_rays = 0;
+
+  // Real xc = (xmax + xmin) / 2.0;
+  // Real yc = (ymax + ymin) / 2.0;
+
+  // std::vector<std::string> names;
+  // std::vector<Real> x_coords;
+  // std::vector<Real> y_coords;
+  // std::vector<Real> energy_rays;
+  // std::vector<Point> directions;
+  // std::vector<Point> start_points;
+
+  // for (unsigned int i = 0; i < nx; ++i)
+  // {
+  //   for (unsigned int j = 0; j < ny; ++j)
+  //   {
+  //     Real xcell = (i + 0.5) * size + xmin;
+  //     Real ycell = (j + 0.5) * size + ymin;
+  //     if (((xcell - xc) * (xcell - xc) + (ycell - yc) * (ycell - yc)) < cut_off_r * cut_off_r)
+  //     {
+  //       num_rays++;
+  //     }
+  //   }
+  // }
+
+  // // Real Q_bar = Q * (r0 * r0 * libMesh::pi) / num_rays / _mesh.elemPtr(0)->volume();
+  // Real Q_bar = Q / _mesh.elemPtr(0)->hmin() * 8.0;
+  // Real Q_bar = Q * size * size / (_mesh.elemPtr(0)->volume() / std::pow(2.0, 2.0));
+
+  // num_rays = 0;
+
+  // for (unsigned int i = 0; i < nx; ++i)
+  // {
+  //   for (unsigned int j = 0; j < ny; ++j)
+  //   {
+  //     Real xcell = (i + 0.5) * size + xmin;
+  //     Real ycell = (j + 0.5) * size + ymin;
+  //     if (((xcell - xc) * (xcell - xc) + (ycell - yc) * (ycell - yc)) < cut_off_r * cut_off_r)
+  //     {
+  //       num_rays++;
+  //       names.push_back("ray_" + std::to_string(num_rays));
+  //       x_coords.push_back(xcell);
+  //       y_coords.push_back(ycell);
+  //       start_points.push_back(Point(xcell, ycell, 0.003));
+  //       directions.push_back(Point(0, 0, -1));
+  //       Real energy =
+  //           2.0 * Q_bar / (r0 * r0 * libMesh::pi) *
+  //           std::exp(-2.0 / r0 / r0 * ((xcell - xc) * (xcell - xc) + (ycell - yc) * (ycell -
+  //           yc)));
+  //       // Real energy = Q_bar;
+  //       energy_rays.push_back(energy);
+  //     }
+  //   }
+  // }
+
+  // std::cout << "number of rays = " << num_rays << std::endl;
+
+  // for (std::size_t i = 0; i < names.size(); ++i)
+  // {
+  //   std::shared_ptr<Ray> ray = acquireRay();
+
+  //   // Point shift_x((_t - 0.28) * 0.009, 0, 0);
+
+  //   // if (_t < 0.28)
+  //   //   shift_x(0) = 0.0;
+
+  //   // Point shift_x(-_t * 300e-4, 0, 0);
+
+  //   // ray->setStart(start_points[i] + shift_x);
+  //   ray->setStart(start_points[i]);
+
+  //   ray->setStartingDirection((directions)[i]);
+
+  //   ray->data(_energy_density_index) = energy_rays[i];
+
+  //   ray->setStartingMaxDistance(0.03);
+
+  //   _rays.emplace_back(std::move(ray));
+  // }
+
+  // return;
 
   if (_compute_expected_distance)
   {
