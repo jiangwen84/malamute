@@ -81,8 +81,7 @@ MeltPoolHeatSource::precomputeQpResidual()
   laser_source = 0;
 
   if (_laser_deposition[_qp] > 0)
-    laser_source = _laser_deposition[_qp];
-  // laser_source = _laser_deposition[_qp] / _laser_deposition_num[_qp];
+  laser_source = _laser_deposition[_qp];
 
   ADReal convection = _Ah * (_u[_qp] - _T0);
   ADReal radiation =

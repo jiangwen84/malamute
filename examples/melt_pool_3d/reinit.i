@@ -141,7 +141,7 @@
     [grad_ls]
       vars = 'grad_ls'
     petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_shift_amount'
-   petsc_options_value = ' asm      lu           2               31 NONZERO  1e-12'
+   petsc_options_value = ' asm      ilu           2               31 NONZERO  1e-12'
     []
     [ls]
       vars = 'ls'
@@ -167,7 +167,7 @@
   # petsc_options_value = ' asm      lu           2               31                 preonly'
   automatic_scaling = true
   off_diagonals_in_auto_scaling = true
-  dt = 1e-6
+  dt = 1e-7
 []
 [Outputs]
   exodus = false
