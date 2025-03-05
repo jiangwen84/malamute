@@ -2,7 +2,7 @@
   [./gmg]
     type = ConcentricCircleMeshGenerator
     num_sectors = 8
-    radii = '0.0015'
+    radii = '0.0005'
     rings = '4'
     has_outer_square = no
     pitch = 1.42063
@@ -14,7 +14,7 @@
     type = MeshExtruderGenerator
     input = gmg
     num_layers = 25
-    extrusion_vector = '0 0 0.006'
+    extrusion_vector = '0 0 0.002'
     bottom_sideset = 'new_front'
     top_sideset = 'new_back'
   []
@@ -143,8 +143,8 @@
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
-  epsilon = 0.00008
-  point = '0.00 0.00 0.003'
+  epsilon = 0.00004
+  point = '0.0005 0.0005 0.001'
     normal = '0 0 -1'
   []
 []
@@ -175,7 +175,7 @@
     #level_set_regularized_gradient = grad_ls
     level_set = ls
     variable = curvature
-    varepsilon = 2e-5
+    varepsilon = 8e-6
   []
   # [grad_ls]
   #   type = VariableGradientRegularization
@@ -294,23 +294,23 @@
   [thermal]
     type = LevelSetThermalMaterial
     temperature = temp
-    c_g = 600
-    c_s = 400
-    c_l = 400
-    k_g = 10
-    k_s = 40
-    k_l = 40
-    solidus_temperature = 1350
-    latent_heat = 2.5e5
+    c_g = 520
+    c_s = 700
+    c_l = 700
+    k_g = 0.028
+    k_s = 35
+    k_l = 35
+    solidus_temperature = 1723
+    latent_heat = 2.7e5
     outputs = all
   []
   [mushy]
     type = MushyZoneMaterial
     temperature = temp
-    liquidus_temperature = 1400
-    solidus_temperature = 1350
-    rho_s = 7000
-    rho_l = 7000
+    liquidus_temperature = 1658
+    solidus_temperature = 1723
+    rho_s = 8000
+    rho_l = 8000
     outputs = all
   []
   [delta]
@@ -333,10 +333,10 @@
     alpha = .1
     temperature = temp
     curvature = curvature
-    surface_tension = 1.169 #1.169
-    thermal_capillary = -4.3e-5
+    surface_tension = 1.68 #1.169
+    thermal_capillary = -1e-4
     rho_l = 8000
-    rho_g = 1.184
+    rho_g = 1.78
     outputs = all
     output_properties = melt_pool_mass_rate
     cp_name = specific_heat
@@ -351,18 +351,18 @@
     vaporization_latent_heat = 9.6e6
     atomic_weight = 97.43e-27
     mole_mass = 415e-3
-    vaporization_temperature = 3134
+    vaporization_temperature = 3068
     reference_pressure = 1.01e5 #1.01e5
     R_constant = 8.314
     outputs = all
   []
   [fluid]
     type = LevelSetFluidMaterial
-    rho_g = 1.184
-    rho_s = 7000
-    rho_l = 7000
-    mu_g = 1e-5
-    mu_l = 0.01
+    rho_g = 1.78
+    rho_s = 8000
+    rho_l = 8000
+    mu_g = 1.5e-5
+    mu_l = 5e-3
     mu_s = 1e3
     permeability_constant = 1e-8
     outputs = all
@@ -456,7 +456,7 @@
 [MultiApps]
   [reinit]
     type = LevelSetReinitializationMultiApp
-    input_files = 'reinit.i'
+    input_files = 'reinit_2.i'
     execute_on = TIMESTEP_END
   []
 []
