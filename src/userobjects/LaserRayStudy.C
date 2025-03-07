@@ -244,7 +244,7 @@ LaserRayStudy::defineRays()
   Real xmax = 0.00015;
   Real ymax = 0.00015;
 
-  Real Q = 150;
+  Real Q = 250;
   Real size = (xmax - xmin) / nx;
   unsigned int num_rays = 0;
 

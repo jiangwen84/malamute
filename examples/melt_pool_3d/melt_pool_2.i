@@ -24,6 +24,7 @@
     coord = '0.0 0 0'
     input = extrude
   []
+  uniform_refine = 0
 []
 
 # [Adaptivity]
@@ -175,7 +176,7 @@
     #level_set_regularized_gradient = grad_ls
     level_set = ls
     variable = curvature
-    varepsilon = 8e-6
+    varepsilon = 6e-6
   []
   # [grad_ls]
   #   type = VariableGradientRegularization
@@ -362,7 +363,7 @@
     rho_s = 8000
     rho_l = 8000
     mu_g = 1.5e-5
-    mu_l = 5e-3
+    mu_l = 0.01
     mu_s = 1e3
     permeability_constant = 1e-8
     outputs = all
@@ -524,8 +525,8 @@
     []
     [up]
       vars = 'velocity p'
-      petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_mat_solver_type -sub_pc_factor_shift_amount'
-      petsc_options_value = ' asm      lu           2               31 NONZERO superlu_dist 1e-12'
+      petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type  -sub_pc_factor_shift_amount'
+      petsc_options_value = ' asm      lu           2               31 NONZERO  1e-12'
       #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
       #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
     []
@@ -540,6 +541,8 @@
       petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
       # petsc_options_iname = '-pc_type -ksp_type'
       # petsc_options_value = '     hypre  preonly'
+      #   petsc_options_iname = '-pc_type -pc_sub_type'
+      # petsc_options_value = 'asm      lu'
     []
     # [ls]
     #   vars = 'ls'
@@ -606,8 +609,8 @@
   num_steps = 1000
   nl_forced_its = 2
   line_search = 'none'
-  petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
-  petsc_options_value = 'lu NONZERO superlu_dist preonly'
+  # petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
+  # petsc_options_value = 'lu NONZERO superlu_dist preonly'
   # petsc_options_iname = '-pc_type  -sub_pc_type -pc_factor_shift_type -sub_pc_factor_shift_amount'
   # petsc_options_value = 'asm             lu NONZERO 1e-10'
   l_max_its = 50

@@ -18,6 +18,7 @@
     bottom_sideset = 'new_front'
     top_sideset = 'new_back'
   []
+  uniform_refine = 0
 []
 
 [Adaptivity]
@@ -82,9 +83,9 @@
   [ls]
     order = FIRST
   []
-  [grad_ls]
-    family = LAGRANGE_VEC
-  []
+  # [grad_ls]
+  #   family = LAGRANGE_VEC
+  # []
 []
 [AuxVariables]
   [ls_0]
@@ -103,18 +104,24 @@
     type = TimeDerivative
     variable = ls
   []
+  # [reinit]
+  #   type = LevelSetGradientRegularizationReinitialization
+  #   variable = ls
+  #   level_set = ls_0
+  #   level_set_gradient = grad_ls
+  #   epsilon = 0.00004
+  # []
   [reinit]
-    type = LevelSetGradientRegularizationReinitialization
+    type = LevelSetOlssonReinitialization
     variable = ls
-    level_set = ls_0
-    level_set_gradient = grad_ls
-    epsilon = 0.00008
+    phi_0 = ls_0
+    epsilon = 0.00004
   []
-  [grad_ls]
-    type = VariableGradientRegularization
-    regularized_var = ls_0
-    variable = grad_ls
-  []
+  # [grad_ls]
+  #   type = VariableGradientRegularization
+  #   regularized_var = ls_0
+  #   variable = grad_ls
+  # []
 []
 [Problem]
   type = LevelSetReinitializationProblem
@@ -128,33 +135,33 @@
 # []
 
 
-[Preconditioning]
-  [FSP]
-    type = FSP
-    topsplit = 'by_var'
-    [by_var]
-      splitting = 'grad_ls ls'
-      splitting_type = additive
-      petsc_options_iname = '-ksp_type'
-      petsc_options_value = 'fgmres'
-    []
-    [grad_ls]
-      vars = 'grad_ls'
-  #   petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_shift_amount'
-  #  petsc_options_value = ' asm      ilu           2               31 NONZERO  1e-12'
-      petsc_options_iname = '-pc_type -pc_hypre_type'
-  petsc_options_value = 'hypre boomeramg'
-    []
-    [ls]
-      vars = 'ls'
-      # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
-      # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+# [Preconditioning]
+#   [FSP]
+#     type = FSP
+#     topsplit = 'by_var'
+#     [by_var]
+#       splitting = 'grad_ls ls'
+#       splitting_type = additive
+#       petsc_options_iname = '-ksp_type'
+#       petsc_options_value = 'fgmres'
+#     []
+#     [grad_ls]
+#       vars = 'grad_ls'
+#   #   petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type -sub_pc_factor_shift_amount'
+#   #  petsc_options_value = ' asm      ilu           2               31 NONZERO  1e-12'
+#       petsc_options_iname = '-pc_type -pc_hypre_type'
+#   petsc_options_value = 'hypre boomeramg'
+#     []
+#     [ls]
+#       vars = 'ls'
+#       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
+#       # petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
 
-  petsc_options_iname = '-pc_type -pc_sub_type'
-  petsc_options_value = 'asm      ilu'
-    []
-  []
-[]
+#   petsc_options_iname = '-pc_type -pc_sub_type'
+#   petsc_options_value = 'asm      ilu'
+#     []
+#   []
+# []
 
 [Executioner]
   type = Transient
@@ -172,8 +179,8 @@
   # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -sub_ksp_type'
   # petsc_options_value = ' asm      lu           2               31                 preonly'
 
-  # petsc_options_iname = '-pc_type -pc_sub_type'
-  # petsc_options_value = 'asm      ilu'
+  petsc_options_iname = '-pc_type -pc_sub_type'
+  petsc_options_value = 'asm      ilu'
 
   #   petsc_options_iname = '-pc_type -pc_hypre_type'
   # petsc_options_value = 'hypre boomeramg'
