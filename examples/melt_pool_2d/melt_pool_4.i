@@ -16,7 +16,7 @@
     coord = '0.0 0.003'
     input = gen
   []
-  uniform_refine = 1
+  uniform_refine = 2
 []
 # [Adaptivity]
 #   steps = 3
@@ -55,8 +55,8 @@
     [../]
       [marker1]
         type = ValueRangeMarker
-        lower_bound = 0.05
-        upper_bound = 0.95
+        lower_bound = 0.01
+        upper_bound = 0.99
         variable = ls
       []
       [marker2]
@@ -124,7 +124,7 @@
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
-    epsilon = 0.000015
+    epsilon = 0.00001
     point = '0.0015 0.0015 0'
     normal = '0 -1 0'
   []
@@ -153,12 +153,12 @@
     boundary = 'pinned_node'
     value = 0
   []
- [temp]
-  type = DirichletBC
-  value = 300
-  boundary = bottom
-  variable = temp
- []
+#  [temp]
+#   type = DirichletBC
+#   value = 300
+#   boundary = bottom
+#   variable = temp
+#  []
 []
 [Kernels]
   [curvature]
@@ -238,8 +238,8 @@
     ambient_temperature = 300
     laser_location_x = '0.00075'
     laser_location_y = '0.0015'
-    rho_l = 4400
-    rho_g = 1.184
+    rho_l = 8000
+    rho_g = 1.78
     vaporization_latent_heat = 9.6e6
     laser_deposition = deposition
     laser_deposition_number = deposition_number
@@ -285,23 +285,23 @@
   [thermal]
     type = LevelSetThermalMaterial
     temperature = temp
-    c_g = 680
-    c_s = 670
-    c_l = 730
-    k_g = 0.028
-    k_s = 21
-    k_l = 29
-    solidus_temperature = 1878
-    latent_heat = 2.9e5
+    c_g = 520
+    c_s = 700
+    c_l = 700
+    k_g = 0.4
+    k_s = 25
+    k_l = 25
+    solidus_temperature = 1723
+    latent_heat = 2.7e5
     outputs = all
   []
   [mushy]
     type = MushyZoneMaterial
     temperature = temp
-    liquidus_temperature = 1928
-    solidus_temperature = 1878
-    rho_s = 4400
-    rho_l = 4400
+    liquidus_temperature = 1658
+    solidus_temperature = 1723
+    rho_s = 8000
+    rho_l = 8000
     outputs = all
   []
   [delta]
@@ -324,10 +324,10 @@
     alpha = .1
     temperature = temp
     curvature = curvature
-    surface_tension = 1.68 #1.169
-    thermal_capillary = -2.6e-4
-    rho_l = 4400
-    rho_g = 0.894
+    surface_tension = 0.07 #1.169
+    thermal_capillary = -0.5e-4
+    rho_l = 8000
+    rho_g = 1.78
     outputs = all
     output_properties = melt_pool_mass_rate
     cp_name = specific_heat
@@ -341,18 +341,18 @@
     Boltzmann_constant = 1.38064852e-23
     vaporization_latent_heat = 9.6e6
     atomic_weight = 97.43e-27
-    mole_mass = 62.2
-    vaporization_temperature = 3533
+    mole_mass = 415e-3
+    vaporization_temperature = 3068
     reference_pressure = 1.01e5 #1.01e5
     R_constant = 8.314
     outputs = all
   []
   [fluid]
     type = LevelSetFluidMaterial
-    rho_g = 0.894
-    rho_s = 4400
-    rho_l = 4400
-    mu_g = 1.5e-5
+    rho_g = 1.78
+    rho_s = 8000
+    rho_l = 8000
+    mu_g = 0.5e-5
     mu_l = 5e-3
     mu_s = 1e3
     permeability_constant = 1e-8
@@ -439,7 +439,7 @@
 [MultiApps]
   [reinit]
     type = LevelSetReinitializationMultiApp
-    input_files = 'reinit.i'
+    input_files = 'reinit_5.i'
     execute_on = TIMESTEP_END
   []
 []
@@ -586,7 +586,7 @@
   solve_type = NEWTON
   dt = 1e-5
   nl_abs_tol = 1e-7
-  num_steps = 1000
+  num_steps = 10000
   nl_forced_its = 2
   line_search = 'none'
   petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
@@ -607,3 +607,4 @@
     execute_on = TIMESTEP_END
   []
 []
+

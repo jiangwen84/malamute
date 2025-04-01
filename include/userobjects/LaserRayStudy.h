@@ -55,6 +55,7 @@ protected:
   const bool _edge_to_edge;
   const bool _side_aq;
   const bool _centroid_aq;
+  const Real _Q;
 
   /// Whether or not to compute the expected distance for generated rays
   const bool _compute_expected_distance;

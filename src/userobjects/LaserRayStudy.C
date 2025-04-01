@@ -47,6 +47,7 @@ LaserRayStudy::validParams()
                         false,
                         "Enable generation of rays from boundary element centroids in the "
                         "direction of angular quadrature.");
+  params.addParam<Real>("power", 1090, "Power");
 
   params.addRangeCheckedParam<unsigned int>(
       "polar_quad_order",
@@ -71,14 +72,14 @@ LaserRayStudy::validParams()
 
   params.addParam<bool>("set_incoming_side", true, "Whether or not to set the incoming side");
 
-  // When we define rays, they are already localized on the processors that start them
-  // and the starting elem/incoming side is set
-  params.set<bool>("_claim_after_define_rays") = false;
-  // Can't have replicated Rays if the Rays are on their starting processors only
-  params.set<bool>("_define_rays_replicated") = false;
-  // Don't need to use registration here. For the purposes of testing and this study,
-  // we'll really only ever access the Rays by ID (if at all)
-  params.set<bool>("_use_ray_registration") = false;
+  // // When we define rays, they are already localized on the processors that start them
+  // // and the starting elem/incoming side is set
+  // params.set<bool>("_claim_after_define_rays") = false;
+  // // Can't have replicated Rays if the Rays are on their starting processors only
+  // params.set<bool>("_define_rays_replicated") = false;
+  // // Don't need to use registration here. For the purposes of testing and this study,
+  // // we'll really only ever access the Rays by ID (if at all)
+  // params.set<bool>("_use_ray_registration") = false;
 
   return params;
 }
@@ -91,6 +92,7 @@ LaserRayStudy::LaserRayStudy(const InputParameters & parameters)
     _edge_to_edge(getParam<bool>("edge_to_edge")),
     _side_aq(getParam<bool>("side_aq")),
     _centroid_aq(getParam<bool>("centroid_aq")),
+    _Q(getParam<Real>("power")),
     _compute_expected_distance(getParam<bool>("compute_expected_distance")),
     _polar_quad_order(getParam<unsigned int>("polar_quad_order")),
     _azimuthal_quad_order(getParam<unsigned int>("azimuthal_quad_order")),
@@ -142,16 +144,16 @@ LaserRayStudy::defineRays()
 
   // 2D
 
-  unsigned int nx = 300;
+  unsigned int nx = 50;
   // Real r0 = 0.140e-3;
   // Real xmin = 0.0004;
   // Real xmax = 0.0006;
 
-  Real r0 = 0.15e-3;
-  Real xmin = 0.0004;
-  Real xmax = 0.0006;
+  Real r0 = 0.3e-3;
+  Real xmin = 0.00045;
+  Real xmax = 0.00055;
 
-  Real Q = 100;
+  Real Q = _Q; // 150;
   Real size = (xmax - xmin) / nx;
   unsigned int num_rays = 0;
 
@@ -178,7 +180,11 @@ LaserRayStudy::defineRays()
   std::cout << "_mesh.elemPtr(0)->hmin() = " << _mesh.elemPtr(0)->hmin() << std::endl;
   // Real Q_bar = Q / _mesh.elemPtr(0)->hmin() * 8.0;
 
-  Real Q_bar = Q * size / (_mesh.elemPtr(0)->volume() / std::pow(2.0, 3.0));
+  Real Q_bar =
+      Q * size / (_mesh.elemPtr(0)->hmin() * _mesh.elemPtr(0)->hmin() / std::pow(4.0, 3.0));
+
+  if (_t_step < 3)
+    Q_bar = Q * size / (_mesh.elemPtr(0)->hmin() * _mesh.elemPtr(0)->hmin());
 
   num_rays = 0;
 
@@ -190,10 +196,10 @@ LaserRayStudy::defineRays()
       num_rays++;
       names.push_back("ray_" + std::to_string(num_rays));
       x_coords.push_back(xcell);
-      // start_points.push_back(Point(xcell + 0.00040192378, .003, 0));
-      // directions.push_back(Point(-0.26794919243, -1, 0));
-      start_points.push_back(Point(xcell, .002, 0));
-      directions.push_back(Point(0, -1, 0));
+      start_points.push_back(Point(xcell + 0.00026794919, .002, 0));
+      directions.push_back(Point(-0.26794919243, -1, 0));
+      // start_points.push_back(Point(xcell, .002, 0));
+      // directions.push_back(Point(0, -1, 0));
       Real energy = 2.0 * Q_bar / (r0 * r0 * libMesh::pi) *
                     std::exp(-2.0 / r0 / r0 * ((xcell - xc) * (xcell - xc)));
       energy_rays.push_back(energy);
@@ -204,7 +210,10 @@ LaserRayStudy::defineRays()
 
   for (std::size_t i = 0; i < names.size(); ++i)
   {
-    std::shared_ptr<Ray> ray = acquireRay();
+    std::shared_ptr<Ray> ray = acquireRegisteredRay(names[i]);
+
+    // std::cout << "ray id = " << ray->id() << std::endl;
+    // std::shared_ptr<Ray> ray = acquireReplicatedRay();
 
     // Point shift_x((_t - 0.02) * 0.005, 0, 0);
 
@@ -219,7 +228,7 @@ LaserRayStudy::defineRays()
 
     ray->data(_energy_density_index) = energy_rays[i];
 
-    ray->setStartingMaxDistance(0.05);
+    ray->setStartingMaxDistance(0.002);
 
     _rays.emplace_back(std::move(ray));
   }

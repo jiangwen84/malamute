@@ -18,6 +18,8 @@ LevelSetOlssonOneStepReinitialization::validParams()
   InputParameters params = ADKernelGrad::validParams();
   params.addClassDescription("The re-initialization equation defined by Olsson et. al. (2007).");
   params.addRequiredParam<Real>("reinit_speed", "Reinitialization Speed.");
+  params.addRequiredCoupledVar("level_set_gradient",
+                               "Regularized gradient of the level set variable");
   params.addRequiredParam<PostprocessorName>(
       "epsilon", "The epsilon coefficient to be used in the reinitialization calculation.");
   return params;
@@ -26,6 +28,7 @@ LevelSetOlssonOneStepReinitialization::validParams()
 LevelSetOlssonOneStepReinitialization::LevelSetOlssonOneStepReinitialization(
     const InputParameters & parameters)
   : ADKernelGrad(parameters),
+    _grad_c(adCoupledVectorValue("level_set_gradient")),
     _reinit_speed(getParam<Real>("reinit_speed")),
     _epsilon(getPostprocessorValue("epsilon"))
 {
@@ -34,9 +37,11 @@ LevelSetOlssonOneStepReinitialization::LevelSetOlssonOneStepReinitialization(
 ADRealVectorValue
 LevelSetOlssonOneStepReinitialization::precomputeQpResidual()
 {
-  ADReal s = (_grad_u[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm() + Real(libMesh::TOLERANCE);
+  // ADReal s = (_grad_u[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm() +
+  // Real(libMesh::TOLERANCE);
 
-  ADRealVectorValue n = _grad_u[_qp] / s;
+  // ADRealVectorValue n = _grad_u[_qp] / s;
+  ADRealVectorValue n = _grad_c[_qp];
   ADRealVectorValue f = _u[_qp] * (1 - _u[_qp]) * n;
   return (-f + _epsilon * ((_grad_u[_qp] * n) * n)) * _reinit_speed;
 }

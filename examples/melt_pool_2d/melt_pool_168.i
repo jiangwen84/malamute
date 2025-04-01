@@ -1,25 +1,22 @@
 [Mesh]
   [gen]
     type = GeneratedMeshGenerator
-    dim = 3
+    dim = 2
     xmin = 0
-    xmax = 0.0015
+    xmax = 0.001
     ymin = 0
-    ymax = 0.0015
-    zmin = 0
-    zmax = 0.003
-    nx = 25
-    ny = 25
-    nz = 50
-    elem_type = HEX8
+    ymax = 0.002
+    nx = 15
+    ny = 30
+    elem_type = QUAD4
   []
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0.00 0.003'
+    coord = '0.0 0.002'
     input = gen
   []
-  uniform_refine = 0
+  uniform_refine = 3
 []
 # [Adaptivity]
 #   steps = 3
@@ -39,7 +36,7 @@
 # []
 [Adaptivity]
   marker = marker
-  max_h_level = 1
+  max_h_level = 3
   # cycles_per_step = 1
   [Indicators]
     [error1]
@@ -50,20 +47,16 @@
       type = GradientJumpIndicator
       variable = vel_y
     []
-    [error3]
-      type = GradientJumpIndicator
-      variable = vel_z
-    []
   []
   [Markers]
     [./marker]
       type = ComboMarker
-      markers = 'marker1 marker2 marker3 marker4 marker5'
+      markers = 'marker1 marker2 marker3 marker4'
     [../]
       [marker1]
         type = ValueRangeMarker
-        lower_bound = 0.05
-        upper_bound = 0.95
+        lower_bound = 0.01
+        upper_bound = 0.99
         variable = ls
       []
       [marker2]
@@ -84,12 +77,6 @@
       variable = temp
       refine = 1000
     [../]
-      [marker5]
-        type = ErrorFractionMarker
-        coarsen = 0.2
-        refine = 0.8
-        indicator = error3
-      []
       # [./marker2]
       #   type = BoxMarker
       #   bottom_left = '0.0005 0.001 0'
@@ -109,7 +96,6 @@
     type = VectorConstantIC
     x_value = 1e-10
     y_value = 1e-10
-    z_value = 1e-10
     variable = velocity
   []
 []
@@ -138,9 +124,9 @@
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
-    epsilon = 0.0001
-    point = '0.0015 0.0015 0.0015'
-    normal = '0 0 -1'
+    epsilon = 0.00002
+    point = '0.001 0.001 0'
+    normal = '0 -1 0'
   []
 []
 
@@ -148,8 +134,18 @@
   [no_slip]
     type = ADVectorFunctionDirichletBC
     variable = velocity
-    boundary = 'bottom left right top front back'
+    boundary = 'bottom left right top'
   []
+
+  # [no_bc]
+  #   type = INSADMomentumNoBCBC
+  #   variable = velocity
+  #   viscous_form = 'traction'
+  #   boundary = 'top'
+  #   pressure = p
+  #   mu_name = mu
+  #   integrate_p_by_parts = true
+  # []
 
   [pressure_pin]
     type = DirichletBC
@@ -157,12 +153,12 @@
     boundary = 'pinned_node'
     value = 0
   []
- [temp]
-  type = DirichletBC
-  value = 300
-  boundary = back
-  variable = temp
- []
+#  [temp]
+#   type = DirichletBC
+#   value = 300
+#   boundary = bottom
+#   variable = temp
+#  []
 []
 [Kernels]
   [curvature]
@@ -170,7 +166,7 @@
     #level_set_regularized_gradient = grad_ls
     level_set = ls
     variable = curvature
-    varepsilon = 4e-5
+    varepsilon = 4e-6
   []
   # [grad_ls]
   #   type = VariableGradientRegularization
@@ -181,12 +177,12 @@
     type = ADTimeDerivative
     variable = ls
   []
-  [level_set_reinit]
-    type = LevelSetOlssonOneStepReinitialization
-    variable = ls
-    reinit_speed = 1e-4
-    epsilon = 0.0001
-  []
+  # [level_set_reinit]
+  #   type = LevelSetOlssonOneStepReinitialization
+  #   variable = ls
+  #   reinit_speed = 1e-4
+  #   epsilon = 0.0001
+  # []
 #   [level_set_advection_supg]
 #     type = LevelSetAdvectionSUPG
 #     velocity = velocity
@@ -199,6 +195,8 @@
 #   []
   [level_set_advection]
     type = LevelSetAdvection
+    # rho_l = 8000
+    # rho_g = 1.78
     velocity = velocity
     variable = ls
   []
@@ -242,8 +240,8 @@
     ambient_temperature = 300
     laser_location_x = '0.00075'
     laser_location_y = '0.0015'
-    rho_l = 4400
-    rho_g = 1.184
+    rho_l = 8000
+    rho_g = 1.78
     vaporization_latent_heat = 9.6e6
     laser_deposition = deposition
     laser_deposition_number = deposition_number
@@ -289,23 +287,23 @@
   [thermal]
     type = LevelSetThermalMaterial
     temperature = temp
-    c_g = 680
-    c_s = 670
-    c_l = 730
+    c_g = 520
+    c_s = 700
+    c_l = 700
     k_g = 0.028
-    k_s = 21
-    k_l = 29
-    solidus_temperature = 1878
-    latent_heat = 2.9e5
+    k_s = 35
+    k_l = 35
+    solidus_temperature = 1723
+    latent_heat = 2.7e5
     outputs = all
   []
   [mushy]
     type = MushyZoneMaterial
     temperature = temp
-    liquidus_temperature = 1928
-    solidus_temperature = 1878
-    rho_s = 4400
-    rho_l = 4400
+    liquidus_temperature = 1658
+    solidus_temperature = 1723
+    rho_s = 8000
+    rho_l = 8000
     outputs = all
   []
   [delta]
@@ -329,9 +327,9 @@
     temperature = temp
     curvature = curvature
     surface_tension = 1.68 #1.169
-    thermal_capillary = -2.6e-4
-    rho_l = 4400
-    rho_g = 0.894
+    thermal_capillary = -1e-4 #-1e-4 #-1e-4
+    rho_l = 8000
+    rho_g = 1.78
     outputs = all
     output_properties = melt_pool_mass_rate
     cp_name = specific_heat
@@ -345,21 +343,21 @@
     Boltzmann_constant = 1.38064852e-23
     vaporization_latent_heat = 9.6e6
     atomic_weight = 97.43e-27
-    mole_mass = 62.2
-    vaporization_temperature = 3533
+    mole_mass = 415e-3
+    vaporization_temperature = 3068
     reference_pressure = 1.01e5 #1.01e5
     R_constant = 8.314
     outputs = all
   []
   [fluid]
     type = LevelSetFluidMaterial
-    rho_g = 0.894
-    rho_s = 4400
-    rho_l = 4400
+    rho_g = 1.78
+    rho_s = 8000
+    rho_l = 8000
     mu_g = 1.5e-5
     mu_l = 5e-3
     mu_s = 1e3
-    permeability_constant = 1e-8
+    permeability_constant = 1e6
     outputs = all
   []
 []
@@ -403,8 +401,6 @@
   []
   [vel_y]
   []
-  [vel_z]
-  []
 []
 
 [AuxKernels]
@@ -419,12 +415,6 @@
     component = y
     vector_variable = velocity
     variable = vel_y
-  []
-  [vel_z]
-    type = VectorVariableComponentAux
-    component = z
-    vector_variable = velocity
-    variable = vel_z
   []
 []
 
@@ -446,56 +436,57 @@
 
   always_cache_traces = true
   data_on_cache_traces = true
+  power = 400
 []
 
-# [MultiApps]
-#   [reinit]
-#     type = LevelSetReinitializationMultiApp
-#     input_files = 'reinit.i'
-#     execute_on = TIMESTEP_END
-#   []
-# []
-# [Transfers]
-#   [./marker_to_sub]
-#     type = LevelSetMeshRefinementTransfer
-#     to_multi_app = reinit
-#     source_variable = marker
-#     variable = marker
-#   [../]
-#   [to_sub]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-#   # [to_sub_temp]
-#   #   type = MultiAppCopyTransfer
-#   #   source_variable = temp
-#   #   variable = temp
-#   #   to_multi_app = reinit
-#   #   execute_on = 'timestep_end'
-#   # []
-#   [to_sub_init]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls_0
-#     to_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-#   [from_sub]
-#     type = MultiAppCopyTransfer
-#     source_variable = ls
-#     variable = ls
-#     from_multi_app = reinit
-#     execute_on = 'timestep_end'
-#   []
-# []
+[MultiApps]
+  [reinit]
+    type = LevelSetReinitializationMultiApp
+    input_files = 'reinit_7.i'
+    execute_on = TIMESTEP_END
+  []
+[]
+[Transfers]
+  [./marker_to_sub]
+    type = LevelSetMeshRefinementTransfer
+    to_multi_app = reinit
+    source_variable = marker
+    variable = marker
+  [../]
+  [to_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+  # [to_sub_temp]
+  #   type = MultiAppCopyTransfer
+  #   source_variable = temp
+  #   variable = temp
+  #   to_multi_app = reinit
+  #   execute_on = 'timestep_end'
+  # []
+  [to_sub_init]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls_0
+    to_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+  [from_sub]
+    type = MultiAppCopyTransfer
+    source_variable = ls
+    variable = ls
+    from_multi_app = reinit
+    execute_on = 'timestep_end'
+  []
+[]
 
 [RayBCs]
   [kill]
     type = KillRayBC
-    boundary = 'top right bottom left front back'
+    boundary = 'top right bottom left'
   []
 []
 
@@ -596,9 +587,9 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 1e-6
+  dt = 1e-5
   nl_abs_tol = 1e-7
-  num_steps = 1000
+  num_steps = 10000
   nl_forced_its = 2
   line_search = 'none'
   petsc_options_iname = '-pc_type -pc_factor_shift_type -pc_factor_mat_solver_package -ksp_type'
@@ -619,3 +610,4 @@
     execute_on = TIMESTEP_END
   []
 []
+

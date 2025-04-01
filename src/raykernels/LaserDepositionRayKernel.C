@@ -36,6 +36,8 @@ LaserDepositionRayKernel::onSegment()
 
   if (currentRay()->trajectoryChanged())
   {
+    // std::cout << "currentRay() id = " << currentRay()->id() << std::endl;
+
     const auto phase_normal = _grad_phase[0].unit();
     // auto dot_prod = std::abs(currentRay()->direction() * phase_normal);
 

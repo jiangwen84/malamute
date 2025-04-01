@@ -72,8 +72,8 @@ INSMeltPoolMaterial::computeQpProperties()
   ADRankTwoTensor proj;
   ADRealVectorValue normal = ADRealVectorValue(0.0);
 
-  // darcy_term = -_permeability[_qp] * _velocity[_qp];
-  darcy_term = 0.0;
+  darcy_term = -_permeability[_qp] * _velocity[_qp];
+  //   darcy_term = 0.0;
   evaporation_term =
       1.0 / (_rho[_qp] * _rho[_qp]) *
       (2 * _melt_pool_mass_rate[_qp] * _rho[_qp] * _dmelt_pool_mass_rate_dT[_qp] * _grad_temp[_qp] -
@@ -86,37 +86,40 @@ INSMeltPoolMaterial::computeQpProperties()
 
   proj.vectorOuterProduct(normal, normal);
   proj = iden - proj;
-  surface_tension_term =
-      _sigma * _curvature[_qp] * (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE));
+  surface_tension_term = _sigma * _curvature[_qp] *
+                         (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE)) *
+                         (2.0 * _rho[_qp] / (_rho_l + _rho_g));
 
   thermalcapillary_term = proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp] *
                           (2.0 * _rho[_qp] / (_rho_l + _rho_g));
+  //   thermalcapillary_term = proj * _grad_temp[_qp] * _sigmaT * _delta_function[_qp];
 
   _melt_pool_momentum_source[_qp] +=
       thermalcapillary_term + surface_tension_term + evaporation_term + darcy_term;
 
   // Recoil Pressure
-  _melt_pool_momentum_source[_qp] +=
-      0.54 * _saturated_vapor_pressure[_qp] * (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE));
+  _melt_pool_momentum_source[_qp] += 0.54 * _saturated_vapor_pressure[_qp] *
+                                     (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE)) *
+                                     (2.0 * _rho[_qp] / (_rho_l + _rho_g));
   // }
 
   _momentum_strong_residual[_qp] -= _melt_pool_momentum_source[_qp];
 
+  // CORRECT
   _mass_strong_residual[_qp] += -_melt_pool_mass_rate[_qp] * normal *
                                 (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
 
-  //   Real r = (_q_point[_qp] - Point(0.00075, 0.0015, 0)).norm();
+  //   Real r = (_q_point[_qp] - Point(0.0005, 0.00075, 0)).norm();
 
-  //   Real laser_source =
-  //       1e-8 / (libMesh::pi * Utility::pow<2>(0.0001)) * std::exp(-2.0 * Utility::pow<2>(r /
-  //       0.0001));
+  //   Real laser_source = 1e-15 / (libMesh::pi * Utility::pow<2>(0.000025)) *
+  //                       std::exp(-2.0 * Utility::pow<2>(r / 0.000025));
 
   //   _mass_strong_residual[_qp] +=
-  //       laser_source * normal * (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
+  //       -laser_source * normal * (-_drho_dc[_qp] * _grad_cv[_qp] / _rho[_qp] / _rho[_qp]);
 
-  // _mass_strong_residual[_qp] +=
-  //     -_melt_pool_mass_rate[_qp] * _delta_function[_qp] * (_rho_l - _rho_g) / _rho[_qp] /
-  //     _rho[_qp];
+  //   _mass_strong_residual[_qp] +=
+  //       _melt_pool_mass_rate[_qp] * _delta_function[_qp] * (_rho_l - _rho_g) / _rho[_qp] /
+  //       _rho[_qp];
 
   _f_l_rate[_qp] = (_f_l[_qp] - _f_l_old[_qp]) / _dt;
 

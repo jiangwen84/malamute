@@ -25,6 +25,8 @@ public:
 protected:
   virtual ADRealVectorValue precomputeQpResidual() override;
 
+  const ADVectorVariableValue & _grad_c;
+
   const Real & _reinit_speed;
 
   /// Interface thickness

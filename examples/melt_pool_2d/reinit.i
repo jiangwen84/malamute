@@ -16,6 +16,7 @@
 [Adaptivity]
   marker = marker
   max_h_level = 3
+ # initial_marker = marker1
   #cycles_per_step = 2
   #initial_steps = 1
 []
@@ -87,6 +88,10 @@
     family = MONOMIAL
     order = CONSTANT
   []
+  # [marker1]
+  #   family = MONOMIAL
+  #   order = CONSTANT
+  # []
   # [temp]
   #   order = FIRST
   # []
@@ -101,8 +106,17 @@
     variable = ls
     level_set = ls_0
     level_set_gradient = grad_ls
-    epsilon = 0.000015
+    epsilon = 0.00005
   []
+
+  #   [reinit]
+  #   type = LevelSetOlssonReinitialization
+  #   variable = ls
+  #   phi_0 = ls_0
+  #   epsilon = 0.00001
+  #   use_modified_reinitilization_formulation = true
+  # []
+
   [grad_ls]
     type = VariableGradientRegularization
     regularized_var = ls_0
@@ -149,7 +163,7 @@
   type = Transient
   solve_type = NEWTON
   start_time = 0
-  num_steps = 10
+  num_steps = 20
   nl_abs_tol = 1e-10
   nl_forced_its = 5
   nl_max_its = 10
@@ -164,6 +178,6 @@
   dt = 1e-8
 []
 [Outputs]
-  exodus = false
+  # exodus = true
   execute_on = 'TIMESTEP_END'
 []
