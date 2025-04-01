@@ -228,8 +228,8 @@ LaserRayStudy::defineRays()
 
   // 3D
 
-  unsigned int nx = 100;
-  unsigned int ny = 100;
+  unsigned int nx = 50;
+  unsigned int ny = 50;
   // Real r0 = 0.140e-3;
   // Real cut_off_r = 0.140e-3;
   // Real xmin = 0.0007;
@@ -273,7 +273,8 @@ LaserRayStudy::defineRays()
 
   // Real Q_bar = Q * (r0 * r0 * libMesh::pi) / num_rays / _mesh.elemPtr(0)->volume();
   // Real Q_bar = Q / _mesh.elemPtr(0)->hmin() * 8.0;
-  Real Q_bar = Q * size * size / (_mesh.elemPtr(0)->volume() / std::pow(8.0, 2.0));
+  // Real Q_bar = Q * size * size / (_mesh.elemPtr(0)->volume() / std::pow(8.0, 2.0));
+  Real Q_bar = Q * size * size;
 
   num_rays = 0;
 

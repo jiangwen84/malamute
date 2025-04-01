@@ -604,7 +604,7 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 1e-5
+  dt = 1e-4
   nl_abs_tol = 1e-6
   num_steps = 1000
   nl_forced_its = 2
