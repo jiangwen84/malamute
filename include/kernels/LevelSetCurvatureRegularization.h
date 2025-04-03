@@ -26,7 +26,7 @@ protected:
   ADReal computeQpResidual() override;
 
   /// Gradient of regularized gradient of level set
-  const VariableGradient & _grad_c;
+  const ADVariableGradient & _grad_c;
 
   /// regulization parameter
   const Real _varepsilon;

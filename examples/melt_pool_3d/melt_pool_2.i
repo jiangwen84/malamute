@@ -505,6 +505,10 @@
   []
 []
 
+[Debug]
+  show_var_residual_norms = true
+[]
+
 [Preconditioning]
   active = 'FSP'
   [SMP]
@@ -525,20 +529,28 @@
     []
     [up]
       vars = 'velocity p'
-      petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type  -sub_pc_factor_shift_amount'
-      petsc_options_value = ' asm      lu           2               31 NONZERO  1e-12'
+      # petsc_options_iname = '-pc_type -sub_pc_type -pc_asm_overlap -ksp_gmres_restart -pc_factor_shift_type  -sub_pc_factor_shift_amount'
+      # petsc_options_value = ' asm      lu           2               100 NONZERO  1e-12'
+      # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
+      # petsc_options_value = 'gmres    100                      hypre  boomeramg'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type'
+      petsc_options_value = 'gmres    31 ilu'
       #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
       #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
     []
     [temp]
       vars = 'temp'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
-      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type'
+      petsc_options_value = 'gmres    31 ilu'
+      # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
+      # petsc_options_value = 'gmres    100                      hypre  boomeramg'
     []
     [curvature]
       vars = 'curvature ls'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -pc_hypre_type  -ksp_pc_side'
-      petsc_options_value = 'gmres    300                5e-2      hypre  boomeramg  right'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type'
+      petsc_options_value = 'gmres    31 ilu'
+      # petsc_options_iname = '-ksp_type -ksp_gmres_restart  -pc_type -pc_hypre_type '
+      # petsc_options_value = 'gmres    100                     hypre  boomeramg'
       # petsc_options_iname = '-pc_type -ksp_type'
       # petsc_options_value = '     hypre  preonly'
       #   petsc_options_iname = '-pc_type -pc_sub_type'
@@ -619,6 +631,7 @@
   automatic_scaling = true
   off_diagonals_in_auto_scaling = true
 []
+
 [Outputs]
   exodus = true
   [rays]

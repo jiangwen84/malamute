@@ -25,7 +25,7 @@ protected:
   virtual ADRealVectorValue precomputeQpResidual() override;
 
   /// Regularized gradient of the level set variable at time, \tau = 0.
-  const ADVectorVariableValue & _grad_c;
+  const VectorVariableValue & _grad_c;
 
    const VariableGradient & _grad_cv;
 

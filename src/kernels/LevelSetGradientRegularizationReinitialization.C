@@ -27,7 +27,7 @@ LevelSetGradientRegularizationReinitialization::validParams()
 LevelSetGradientRegularizationReinitialization::LevelSetGradientRegularizationReinitialization(
     const InputParameters & parameters)
   : ADKernelGrad(parameters),
-     _grad_c(adCoupledVectorValue("level_set_gradient")),
+     _grad_c(coupledVectorValue("level_set_gradient")),
     _grad_cv(coupledGradient("level_set")),
     _epsilon(getParam<Real>("epsilon"))
 {
@@ -38,7 +38,7 @@ LevelSetGradientRegularizationReinitialization::precomputeQpResidual()
 {
   // ADReal s = (_grad_cv[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm();
   // ADRealVectorValue n_hat = _grad_cv[_qp] / s;
-  ADRealVectorValue n_hat = _grad_c[_qp];
+  RealVectorValue n_hat = _grad_c[_qp];
   ADRealVectorValue f = _u[_qp] * (1 - _u[_qp]) * n_hat;
   return (-f + _epsilon * (_grad_u[_qp] * n_hat) * n_hat);
   // return (-f + _epsilon * _grad_u[_qp]);

@@ -24,7 +24,7 @@ LevelSetCurvatureRegularization::validParams()
 
 LevelSetCurvatureRegularization::LevelSetCurvatureRegularization(const InputParameters & parameters)
   : ADKernel(parameters),
-    _grad_c(coupledGradient("level_set")),
+    _grad_c(adCoupledGradient("level_set")),
     _varepsilon(getParam<Real>("varepsilon"))
 {
 }
