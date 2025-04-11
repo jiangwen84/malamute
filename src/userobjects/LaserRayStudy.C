@@ -228,8 +228,8 @@ LaserRayStudy::defineRays()
 
   // 3D
 
-  unsigned int nx = 50;
-  unsigned int ny = 50;
+  unsigned int nx = 100;
+  unsigned int ny = 100;
   // Real r0 = 0.140e-3;
   // Real cut_off_r = 0.140e-3;
   // Real xmin = 0.0007;

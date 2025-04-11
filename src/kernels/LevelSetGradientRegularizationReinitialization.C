@@ -40,6 +40,6 @@ LevelSetGradientRegularizationReinitialization::precomputeQpResidual()
   // ADRealVectorValue n_hat = _grad_cv[_qp] / s;
   RealVectorValue n_hat = _grad_c[_qp];
   ADRealVectorValue f = _u[_qp] * (1 - _u[_qp]) * n_hat;
-  return (-f + _epsilon * (_grad_u[_qp] * n_hat) * n_hat);
-  // return (-f + _epsilon * _grad_u[_qp]);
+//return (-f + _epsilon * (_grad_u[_qp] * n_hat) * n_hat);
+  return (-f + _epsilon * _grad_u[_qp]);
 }

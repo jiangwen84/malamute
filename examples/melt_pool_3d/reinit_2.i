@@ -23,7 +23,7 @@
 
 [Adaptivity]
   marker = marker
-  max_h_level = 2
+  max_h_level = 3
   #cycles_per_step = 2
   #initial_steps = 1
 []
@@ -109,15 +109,15 @@
     variable = ls
     level_set = ls_0
     level_set_gradient = grad_ls
-    epsilon = 0.00004
+    epsilon = 0.00002
   []
-  # [reinit]
-  #   type = LevelSetOlssonReinitialization
-  #   variable = ls
-  #   phi_0 = ls_0
-  #   epsilon = 0.00004
-  # []
-  [grad_ls]
+#   [reinit]
+#     type = LevelSetOlssonReinitialization
+#     variable = ls
+#     phi_0 = ls_0
+#     epsilon = 0.00002
+#   []
+ [grad_ls]
     type = VariableGradientRegularization
     regularized_var = ls_0
     variable = grad_ls
@@ -197,8 +197,8 @@
       petsc_options_value = 'gmres    31'
 
   automatic_scaling = true
-  #off_diagonals_in_auto_scaling = true
-  dt = 1e-7
+  off_diagonals_in_auto_scaling = true
+  dt = 5e-7
 []
 [Outputs]
   exodus = false

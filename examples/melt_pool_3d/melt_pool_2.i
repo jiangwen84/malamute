@@ -45,7 +45,7 @@
 # []
 [Adaptivity]
   marker = marker
-  max_h_level = 2
+  max_h_level = 3
   # cycles_per_step = 1
   [Indicators]
     [error1]
@@ -144,7 +144,7 @@
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
-  epsilon = 0.00004
+  epsilon = 0.00002
   point = '0.0005 0.0005 0.001'
     normal = '0 0 -1'
   []
@@ -176,7 +176,7 @@
     #level_set_regularized_gradient = grad_ls
     level_set = ls
     variable = curvature
-    varepsilon = 6e-6
+    varepsilon = 3e-6
   []
   # [grad_ls]
   #   type = VariableGradientRegularization
@@ -498,6 +498,33 @@
   []
 []
 
+[Postprocessors]
+  [./num_dofs_nl]
+    type = NumDOFs
+    system = NL
+  [../]
+  [./num_dofs_aux]
+    type = NumDOFs
+    system = AUX
+  [../]
+
+  # default
+  [./num_dofs_all]
+    type = NumDOFs
+    system = ALL
+  [../]
+  [./num_elems_active]
+    type = NumElements
+    elem_filter = 'ACTIVE'
+    execute_on = 'initial timestep_end'
+  [../]
+  [./num_elems_total]
+    type = NumElements
+    elem_filter = 'TOTAL'
+    execute_on = 'initial timestep_end'
+  [../]
+[]
+
 [RayBCs]
   [kill]
     type = KillRayBC
@@ -520,12 +547,13 @@
   [FSP]
     type = FSP
     topsplit = 'by_var'
-    full = false
+    full = true
     [by_var]
       splitting = 'up temp curvature'
-      splitting_type = multiplicative
+      splitting_type = additive
       petsc_options_iname = '-ksp_type'
       petsc_options_value = 'fgmres'
+      petsc_options = '-ksp_converged_reason -ksp_monitor_true_residual -ksp_monitor_singular_value -snes_linesearch_monitor'
     []
     [up]
       vars = 'velocity p'
@@ -533,23 +561,23 @@
       # petsc_options_value = ' asm      lu           2               100 NONZERO  1e-12'
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                      hypre  boomeramg'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type'
-      petsc_options_value = 'gmres    31 ilu'
-      #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
+      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'      
+#   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
       #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
     []
-    [temp]
+ [temp]
       vars = 'temp'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type'
-      petsc_options_value = 'gmres    31 ilu'
+            petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
+      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                      hypre  boomeramg'
     []
     [curvature]
       vars = 'curvature ls'
-      petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type'
-      petsc_options_value = 'gmres    31 ilu'
-      # petsc_options_iname = '-ksp_type -ksp_gmres_restart  -pc_type -pc_hypre_type '
+      petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
+      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'      
+# petsc_options_iname = '-ksp_type -ksp_gmres_restart  -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                     hypre  boomeramg'
       # petsc_options_iname = '-pc_type -ksp_type'
       # petsc_options_value = '     hypre  preonly'
@@ -626,8 +654,8 @@
   # petsc_options_iname = '-pc_type  -sub_pc_type -pc_factor_shift_type -sub_pc_factor_shift_amount'
   # petsc_options_value = 'asm             lu NONZERO 1e-10'
   l_max_its = 50
-  nl_max_its = 20
-  nl_div_tol = 1e20
+  nl_max_its = 10
+  nl_div_tol = 1e5
   automatic_scaling = true
   off_diagonals_in_auto_scaling = true
 []
