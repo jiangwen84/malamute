@@ -562,21 +562,21 @@
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                      hypre  boomeramg'
       petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'      
+      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'      
 #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
       #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
     []
  [temp]
       vars = 'temp'
             petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'
+      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                      hypre  boomeramg'
     []
     [curvature]
       vars = 'curvature ls'
       petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'      
+      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'      
 # petsc_options_iname = '-ksp_type -ksp_gmres_restart  -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                     hypre  boomeramg'
       # petsc_options_iname = '-pc_type -ksp_type'
@@ -662,9 +662,9 @@
 
 [Outputs]
   exodus = true
-  [rays]
-    type = RayTracingExodus
-    study = study
-    execute_on = TIMESTEP_END
-  []
+# [rays]
+#    type = RayTracingExodus
+#    study = study
+#    execute_on = TIMESTEP_END
+#  []
 []

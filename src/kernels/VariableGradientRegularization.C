@@ -30,11 +30,11 @@ Real
 VariableGradientRegularization::computeQpResidual()
 {
   Real s = (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm() + libMesh::TOLERANCE;
-  // if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > libMesh::TOLERANCE)
-  //   return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]);
-  // else
-  //   return _test[_i][_qp] * _u[_qp];
-  return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp] / s);
+   if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > 1.0e-4)
+     return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]/s);
+   else
+     return _test[_i][_qp] * _u[_qp];
+  //return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp] / s);
 }
 
 Real

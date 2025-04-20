@@ -109,7 +109,7 @@
     variable = ls
     level_set = ls_0
     level_set_gradient = grad_ls
-    epsilon = 0.00002
+    epsilon = 0.00001
   []
  [grad_ls]
     type = VariableGradientRegularization
