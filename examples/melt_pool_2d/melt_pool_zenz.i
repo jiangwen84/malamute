@@ -1,48 +1,24 @@
 [Mesh]
-  [./gmg]
-    type = ConcentricCircleMeshGenerator
-    num_sectors = 8
-    radii = '0.0005'
-    rings = '4'
-    has_outer_square = no
-    pitch = 1.42063
-    #portion = left_half
-    preserve_volumes = off
-  []
-
-  [./extrude]
-    type = MeshExtruderGenerator
-    input = gmg
-    num_layers = 25
-    extrusion_vector = '0 0 0.002'
-    bottom_sideset = 'new_front'
-    top_sideset = 'new_back'
+  [gen]
+    type = GeneratedMeshGenerator
+    dim = 2
+    xmin = -0.4e-3
+    xmax = 0.4e-3
+    ymin = -0.6e-3
+    ymax = 0.2e-3
+    nx = 32
+    ny = 32
+    elem_type = QUAD4
   []
   [corner_node]
     type = ExtraNodesetGenerator
     new_boundary = 'pinned_node'
-    coord = '0.0 0 0'
-    input = extrude
+    coord = '-0.4e-3 0.2e-3 0'
+    input = gen
   []
   uniform_refine = 0
 []
 
-# [Adaptivity]
-#   steps = 3
-#   marker = box
-#   max_h_level = 3
-#   initial_steps = 3
-#   stop_time = 1.0e-10
-#   [Markers]
-#     [box]
-#       bottom_left = '0.000 0.004 0'
-#       inside = refine
-#       top_right = '0.01 0.006 0'
-#       outside = do_nothing
-#       type = BoxMarker
-#     []
-#   []
-# []
 [Adaptivity]
   marker = marker
   max_h_level = 2
@@ -55,10 +31,6 @@
     [error2]
       type = GradientJumpIndicator
       variable = vel_y
-    []
-    [error3]
-      type = GradientJumpIndicator
-      variable = vel_z
     []
   []
   [Markers]
@@ -144,9 +116,9 @@
 [Functions]
   [ls_exact]
     type = LevelSetOlssonPlane
-  epsilon = 0.00002
-  point = '0.0005 0.0005 0.001'
-    normal = '0 0 -1'
+    epsilon = 0.00002
+    point = '0.000 0.000 0'
+    normal = '0 -1 0'
   []
 []
 
@@ -154,19 +126,19 @@
   [no_slip]
     type = ADVectorFunctionDirichletBC
     variable = velocity
-    boundary = 'new_front new_back outer'
+    boundary = 'top bottom left right'
   []
 
   [pressure_pin]
     type = DirichletBC
     variable = p
     boundary = 'pinned_node'
-    value = 0
+    value = 1.0
   []
  [temp]
   type = DirichletBC
   value = 300
-  boundary = new_back
+  boundary = bottom
   variable = temp
  []
 []
@@ -248,7 +220,7 @@
     ambient_temperature = 300
     laser_location_x = '0.00075'
     laser_location_y = '0.0015'
-    vaporization_latent_heat = 9.6e6
+    vaporization_latent_heat = 9.82e6
     laser_deposition = deposition
   []
   [mass]
@@ -292,23 +264,23 @@
   [thermal]
     type = LevelSetThermalMaterial
     temperature = temp
-    c_g = 520
-    c_s = 700
+    c_g = 732
+    c_s = 660
     c_l = 700
-    k_g = 0.028
-    k_s = 35
-    k_l = 35
-    solidus_temperature = 1723
-    latent_heat = 2.7e5
+    k_g = 0.12
+    k_s = 20
+    k_l = 30
+    solidus_temperature = 1878
+    latent_heat = 2.9e5
     outputs = all
   []
   [mushy]
     type = MushyZoneMaterial
     temperature = temp
-    liquidus_temperature = 1658
-    solidus_temperature = 1723
-    rho_s = 8000
-    rho_l = 8000
+    liquidus_temperature = 1928
+    solidus_temperature = 1878
+    rho_s = 4000
+    rho_l = 4000
     outputs = all
   []
   [delta]
@@ -333,7 +305,7 @@
     curvature = curvature
     surface_tension = 1.68 #1.169
     thermal_capillary = -1e-4
-    rho_l = 8000
+    rho_l = 4000
     rho_g = 1.78
     outputs = all
     output_properties = melt_pool_mass_rate
@@ -348,8 +320,8 @@
     Boltzmann_constant = 1.38064852e-23
     vaporization_latent_heat = 9.6e6
     atomic_weight = 97.43e-27
-    mole_mass = 415e-3
-    vaporization_temperature = 3068
+    mole_mass = 46e-3
+    vaporization_temperature = 3315
     reference_pressure = 1.01e5 #1.01e5
     R_constant = 8.314
     outputs = all
@@ -357,8 +329,8 @@
   [fluid]
     type = LevelSetFluidMaterial
     rho_g = 1.78
-    rho_s = 8000
-    rho_l = 8000
+    rho_s = 4000
+    rho_l = 4000
     mu_g = 1.5e-5
     mu_l = 0.01
     mu_s = 1e3
@@ -406,8 +378,6 @@
   []
   [vel_y]
   []
-  [vel_z]
-  []
 []
 
 [AuxKernels]
@@ -422,12 +392,6 @@
     component = y
     vector_variable = velocity
     variable = vel_y
-  []
-  [vel_z]
-    type = VectorVariableComponentAux
-    component = z
-    vector_variable = velocity
-    variable = vel_z
   []
 []
 
@@ -446,22 +410,20 @@
   always_cache_traces = true
   data_on_cache_traces = true
 
-  laser_power = 200
-  beam_radius = 0.25e-3
-  cutoff_radius = 0.1e-3
-  xmin = -0.00015
-  ymin = -0.00015
-  xmax = 0.00015
-  ymax = 0.00015
+  laser_power = 30
+  beam_radius = 0.07e-3
+  cutoff_radius = 0.07e-3
+  xmin = -0.00007
+  xmax = 0.00007
   nx = 100
-  ny = 100
-  starting_height = 0.002
+  ny = 0
+  starting_height = 0.2e-3
 []
 
 [MultiApps]
   [reinit]
     type = LevelSetReinitializationMultiApp
-    input_files = 'reinit.i'
+    input_files = 'reinit_zenz.i'
     execute_on = TIMESTEP_END
   []
 []
@@ -527,12 +489,23 @@
     elem_filter = 'TOTAL'
     execute_on = 'initial timestep_end'
   [../]
+    [n_elements]
+      type = NumElements
+      execute_on = 'initial timestep_end'
+    []
+    [n_nodes]
+      type = NumNodes
+      execute_on = 'initial timestep_end'
+    []
+    [DOFs]
+      type = NumDOFs
+    []
 []
 
 [RayBCs]
   [kill]
     type = KillRayBC
-    boundary = 'new_front new_back outer'
+    boundary = 'top bottom left right'
   []
 []
 
@@ -566,21 +539,21 @@
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                      hypre  boomeramg'
       petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'
+      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'
 #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
       #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
     []
  [temp]
       vars = 'temp'
             petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'
+      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                      hypre  boomeramg'
     []
     [curvature]
       vars = 'curvature ls'
       petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'
+      petsc_options_value = 'gmres    1000 5e-2 asm      ilu           2'
 # petsc_options_iname = '-ksp_type -ksp_gmres_restart  -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                     hypre  boomeramg'
       # petsc_options_iname = '-pc_type -ksp_type'
@@ -648,7 +621,7 @@
 [Executioner]
   type = Transient
   solve_type = NEWTON
-  dt = 1e-4
+  dt = 1e-5
   nl_abs_tol = 1e-6
   num_steps = 1000
   nl_forced_its = 2

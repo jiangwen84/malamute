@@ -37,11 +37,9 @@ LaserDepositionNumberRayKernel::onSegment()
   if (currentRay()->trajectoryChanged())
   {
     const auto phase_normal = _grad_phase[0].unit();
-    // auto dot_prod = std::abs(currentRay()->direction() * phase_normal);
 
     auto energy = currentRay()->data(currentRay()->study().getRayDataIndex("num_deposition"));
 
-    // addValue(100.0 / (currentRay()->intersections() + 1));
     addValue(1);
   }
 }

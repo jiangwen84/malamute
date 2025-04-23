@@ -45,7 +45,7 @@
 # []
 [Adaptivity]
   marker = marker
-  max_h_level = 3
+  max_h_level = 2
   # cycles_per_step = 1
   [Indicators]
     [error1]
@@ -248,11 +248,8 @@
     ambient_temperature = 300
     laser_location_x = '0.00075'
     laser_location_y = '0.0015'
-    rho_l = 8000
-    rho_g = 1.184
     vaporization_latent_heat = 9.6e6
     laser_deposition = deposition
-    laser_deposition_number = deposition_number
   []
   [mass]
     type = INSADMass
@@ -446,12 +443,19 @@
   type = LaserRayStudy
   execute_on = TIMESTEP_BEGIN
 
-  vertex_to_vertex = false
-  centroid_to_vertex = false
-  centroid_to_centroid = false
-
   always_cache_traces = true
   data_on_cache_traces = true
+
+  laser_power = 200
+  beam_radius = 0.25e-3
+  cutoff_radius = 0.1e-3
+  xmin = -0.00015
+  ymin = -0.00015
+  xmax = 0.00015
+  ymax = 0.00015
+  nx = 100
+  ny = 100
+  starting_height = 0.002
 []
 
 [MultiApps]
@@ -562,7 +566,7 @@
       # petsc_options_iname = '-ksp_type -ksp_gmres_restart -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                      hypre  boomeramg'
       petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'      
+      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'
 #   petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_rtol -ksp_gmres_restart -ksp_pc_side'
       #  petsc_options_value = 'hypre    boomeramg      gmres    5e-1      300                 right'
     []
@@ -576,7 +580,7 @@
     [curvature]
       vars = 'curvature ls'
       petsc_options_iname = '-ksp_type -ksp_gmres_restart -ksp_rtol -pc_type -sub_pc_type -pc_asm_overlap'
-      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'      
+      petsc_options_value = 'gmres    1000 5e-2 asm      lu           2'
 # petsc_options_iname = '-ksp_type -ksp_gmres_restart  -pc_type -pc_hypre_type '
       # petsc_options_value = 'gmres    100                     hypre  boomeramg'
       # petsc_options_iname = '-pc_type -ksp_type'
@@ -662,9 +666,9 @@
 
 [Outputs]
   exodus = true
-# [rays]
-#    type = RayTracingExodus
-#    study = study
-#    execute_on = TIMESTEP_END
-#  []
+[rays]
+   type = RayTracingExodus
+   study = study
+   execute_on = TIMESTEP_END
+ []
 []

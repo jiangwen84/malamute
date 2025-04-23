@@ -7,12 +7,12 @@
 /*                           ALL RIGHTS RESERVED                            */
 /****************************************************************************/
 
-#include "VariableGradientRegularization.h"
+#include "LevelSetNormalRegularization.h"
 
-registerMooseObject("MalamuteApp", VariableGradientRegularization);
+registerMooseObject("MalamuteApp", LevelSetNormalRegularization);
 
 InputParameters
-VariableGradientRegularization::validParams()
+LevelSetNormalRegularization::validParams()
 {
   InputParameters params = VectorKernel::validParams();
   params.addClassDescription(
@@ -21,24 +21,23 @@ VariableGradientRegularization::validParams()
   return params;
 }
 
-VariableGradientRegularization::VariableGradientRegularization(const InputParameters & parameters)
+LevelSetNormalRegularization::LevelSetNormalRegularization(const InputParameters & parameters)
   : VectorKernel(parameters), _grad_c(coupledGradient("regularized_var"))
 {
 }
 
 Real
-VariableGradientRegularization::computeQpResidual()
+LevelSetNormalRegularization::computeQpResidual()
 {
-  Real s = (_grad_c[_qp] + RealVectorValue(libMesh::TOLERANCE)).norm() + libMesh::TOLERANCE;
-   if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > 1.0e-4)
-     return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp]/s);
-   else
-     return _test[_i][_qp] * _u[_qp];
-  //return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp] / s);
+  Real s = _grad_c[_qp].norm() + libMesh::TOLERANCE;
+  if (MetaPhysicL::raw_value(_grad_c[_qp].norm()) > 1.0e-4)
+    return _test[_i][_qp] * (_u[_qp] - _grad_c[_qp] / s);
+  else
+    return _test[_i][_qp] * _u[_qp];
 }
 
 Real
-VariableGradientRegularization::computeQpJacobian()
+LevelSetNormalRegularization::computeQpJacobian()
 {
   return _test[_i][_qp] * (_phi[_j][_qp]);
 }
