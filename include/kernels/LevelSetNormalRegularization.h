@@ -14,12 +14,12 @@
 /**
  * This class performs L2 projection of a variable's gradient onto a new vector variable.
  */
-class VariableGradientRegularization : public VectorKernel
+class LevelSetNormalRegularization : public VectorKernel
 {
 public:
   static InputParameters validParams();
 
-  VariableGradientRegularization(const InputParameters & parameters);
+  LevelSetNormalRegularization(const InputParameters & parameters);
 
 protected:
   Real computeQpResidual() override;

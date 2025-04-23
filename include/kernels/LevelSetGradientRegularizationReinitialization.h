@@ -9,12 +9,12 @@
 
 #pragma once
 
-#include "ADKernelGrad.h"
+#include "KernelGrad.h"
 
 /**
  * Implements the re-initialization equation that uses regularized gradient.
  */
-class LevelSetGradientRegularizationReinitialization : public ADKernelGrad
+class LevelSetGradientRegularizationReinitialization : public KernelGrad
 {
 public:
   static InputParameters validParams();
@@ -22,12 +22,12 @@ public:
   LevelSetGradientRegularizationReinitialization(const InputParameters & parameters);
 
 protected:
-  virtual ADRealVectorValue precomputeQpResidual() override;
+  virtual RealGradient precomputeQpResidual() override;
+
+  virtual RealGradient precomputeQpJacobian() override;
 
   /// Regularized gradient of the level set variable at time, \tau = 0.
   const VectorVariableValue & _grad_c;
-
-   const VariableGradient & _grad_cv;
 
   /// Interface thickness
   const Real & _epsilon;

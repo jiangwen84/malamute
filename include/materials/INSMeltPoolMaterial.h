@@ -76,13 +76,4 @@ protected:
 
   const ADMaterialProperty<Real> & _drho_dc;
   const ADMaterialProperty<Real> & _dmelt_pool_mass_rate_dT;
-
-  /// Latent heat of fusion
-  const Real _Lm;
-
-  const VariableGradient & _grad_fl;
-
-  const MaterialProperty<Real> & _f_l_old;
-
-  ADMaterialProperty<Real> & _f_l_rate;
 };

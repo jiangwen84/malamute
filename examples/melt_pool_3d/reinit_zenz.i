@@ -1,24 +1,18 @@
 [Mesh]
-  [./gmg]
-    type = ConcentricCircleMeshGenerator
-    num_sectors = 8
-    radii = '0.0005'
-    rings = '4'
-    has_outer_square = no
-    pitch = 1.42063
-    #portion = left_half
-    preserve_volumes = off
+  [gen]
+    type = GeneratedMeshGenerator
+    dim = 3
+    xmin = -0.2e-3
+    xmax = 0.2e-3
+    ymin = -0.4e-3
+    ymax = 0.4e-3
+    zmin = -0.6e-3
+    zmax = 0.2e-3
+    nx = 16
+    ny = 32
+    nz = 32
+    elem_type = HEX8
   []
-
-  [./extrude]
-    type = MeshExtruderGenerator
-    input = gmg
-    num_layers = 25
-    extrusion_vector = '0 0 0.002'
-    bottom_sideset = 'new_front'
-    top_sideset = 'new_back'
-  []
-  uniform_refine = 0
 []
 
 [Adaptivity]
@@ -107,9 +101,8 @@
   [reinit]
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
-    level_set = ls_0
     level_set_gradient = grad_ls
-    epsilon = 0.00001
+    epsilon = 0.00002
   []
  [grad_ls]
     type = LevelSetNormalRegularization

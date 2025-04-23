@@ -107,12 +107,11 @@
   [reinit]
     type = LevelSetGradientRegularizationReinitialization
     variable = ls
-    level_set = ls_0
     level_set_gradient = grad_ls
     epsilon = 0.00002
   []
  [grad_ls]
-    type = VariableGradientRegularization
+    type = LevelSetNormalRegularization
     regularized_var = ls_0
     variable = grad_ls
   []

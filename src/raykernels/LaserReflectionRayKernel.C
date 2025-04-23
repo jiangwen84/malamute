@@ -37,9 +37,9 @@ LaserReflectionRayKernel::LaserReflectionRayKernel(const InputParameters & param
     _otf_phase(_mesh.dimension(),
                getVar("phase", 0)->feType(),
                coupledDofValues("phase"),
-               _fe_problem.assembly(_tid, _nl.number()).elem()),
+               _fe_problem.assembly(_tid, _nl->number()).elem()),
     _refractive_index(coupledValue("refractive_index")),
-    _q_point(_fe_problem.assembly(_tid, _nl.number()).qPoints()),
+    _q_point(_fe_problem.assembly(_tid, _nl->number()).qPoints()),
     _just_refracted(false),
     _threshold(0.5),
     _has_refracted_data_index(_study.registerRayData(" ")),
@@ -52,24 +52,6 @@ LaserReflectionRayKernel::LaserReflectionRayKernel(const InputParameters & param
 void
 LaserReflectionRayKernel::onSegment()
 {
-  // mooseAssert(start.absolute_fuzzy_equals(_q_point[0]), "Quadrature point 0 must be segment
-  // start"); mooseAssert(end.absolute_fuzzy_equals(_q_point[1]), "Quadrature point 1 must be
-  // segment end");
-
-  // std::cerr << std::endl
-  //           << "[" << name() << "_" << currentRay()->id() << "]: " << _current_segment_start
-  //           << " -> " << _current_segment_end << std::endl;
-  // std::cerr << "  phase start = " << _phase[0] << std::endl;
-  // std::cerr << "  phase end = " << _phase[1] << std::endl;
-
-  // If we just refracted, it means the start point is in the middle of an
-  // element so there's nothing to do here except remove the flag
-
-  // const RayDataIndex num_reflection_index = _study.getRayDataIndex("num_reflection");
-
-  // if (currentRay()->data(num_reflection_index) >= 5)
-  //   return;
-
   if (!currentRay()->shouldContinue())
     return;
 
@@ -82,38 +64,15 @@ LaserReflectionRayKernel::onSegment()
   }
 
   // Phase at the start and end points on the segment
-  // const auto start_phase = _phase[0];
-  // const auto end_phase = _phase[1];
+
   const auto start_phase = _otf_phase(_current_segment_start);
   const auto end_phase = _otf_phase(_current_segment_end);
-
-  // const bool is_secondary = currentRay()->auxData(_secondary_ray_data_index) > 0;
-  // const bool is_secondary_reflect =
-  //     currentRay()->auxData(_secondary_ray_not_reflect_data_index) > 0;
-  // if (is_secondary && is_secondary_reflect && start_phase < 0.5)
-  // {
-  //   return;
-  // }
-
-  // std::cerr << "  start phase " << start_phase << std::endl;
-  // std::cerr << "  end phase " << end_phase << std::endl;
 
   // If we refract at the end point, let the next segment handle it. Without
   // doing this, the refraction will happen both in this elem and the next elem
   if (MooseUtils::absoluteFuzzyEqual(end_phase, _threshold))
-  {
-    // std::cerr << "  refracting on next segment" << std::endl;
     return;
-  }
 
-  Point refracted_direction;
-
-  // Phase changes happens in this element
-  // if (((MooseUtils::absoluteFuzzyGreaterEqual(start_phase, _threshold) &&
-  //       MooseUtils::absoluteFuzzyLessEqual(end_phase, _threshold)) ||
-  //      (MooseUtils::absoluteFuzzyGreaterEqual(end_phase, _threshold) &&
-  //       MooseUtils::absoluteFuzzyLessEqual(start_phase, _threshold))) &&
-  //     start_phase >= 0.5)
   if (((MooseUtils::absoluteFuzzyGreaterEqual(start_phase, _threshold) &&
         MooseUtils::absoluteFuzzyLessEqual(end_phase, _threshold)) ||
        (MooseUtils::absoluteFuzzyGreaterEqual(end_phase, _threshold) &&
@@ -130,16 +89,7 @@ LaserReflectionRayKernel::onSegment()
                                              start_phase,
                                              end_phase);
 
-    // Direction we refract to
-    // const auto refracted_direction = snell(currentRay()->direction(), phase_normal, start_r,
-    // end_r);
     const auto reflected_direction = reflectedDirection(currentRay()->direction(), phase_normal);
-
-    // Refract!
-    // std::cerr << "  start phase " << start_phase << std::endl;
-    // std::cerr << "  end phase " << end_phase << std::endl;
-    // std::cerr << "  refracted at point " << refracted_point << std::endl;
-    // std::cerr << "  refracted to direction " << reflected_direction << std::endl;
 
     const auto original_direction = currentRay()->direction();
 
@@ -147,23 +97,21 @@ LaserReflectionRayKernel::onSegment()
 
     const RayDataIndex energy_density_index = _study.getRayDataIndex("energy_density");
 
-    // std::cout << "data = " << currentRay()->data(energy_density_index) << std::endl;
-
     has_refracted = 1;
 
     if (currentRay()->auxData(_secondary_ray_data_index))
       currentRay()->auxData(_secondary_ray_not_reflect_data_index) = 1;
 
     // // Midpoint of the Ray segment - where the new Ray will start
-    const Point midpoint = 0.5 * (_current_segment_start + _current_segment_end);
+    // const Point midpoint = 0.5 * (_current_segment_start + _current_segment_end);
 
     // std::cout << "start phase = " << start_phase << ", end phase = " << end_phase << std::endl;
     // std::cout << "ray id = " << currentRay()->id() << "   reflect point = " << refracted_point
     //           << ", reflected_direction = " << reflected_direction << std::endl;
 
-    const auto start_r = _refractive_index[0];
-    const auto end_r = _refractive_index[1];
-    refracted_direction = snell(original_direction, phase_normal, start_r, start_r);
+    // const auto start_r = _refractive_index[0];
+    // const auto end_r = _refractive_index[1];
+    // refracted_direction = snell(original_direction, phase_normal, start_r, start_r);
 
     // std::cout << "midpoint = " << midpoint << std::endl;
     // std::cout << "start_r = " << start_r << std::endl;

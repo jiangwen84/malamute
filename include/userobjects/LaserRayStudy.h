@@ -25,47 +25,8 @@ public:
 
   static InputParameters validParams();
 
-  /**
-   * Whether or not the expected distance is being computed
-   */
-  bool hasExpectedDistance() const { return _compute_expected_distance; }
-  /**
-   * Get the expected total distance Rays should travel
-   */
-  Real expectedDistance() const { return _expected_distance; }
-
 protected:
   virtual void defineRays() override;
-
-  void defineRay(const Elem * starting_elem,
-                 const unsigned short incoming_side,
-                 const Point & p1,
-                 const Point & p2,
-                 const bool ends_within_mesh);
-
-  /**
-   * Insertion point for after _rays is defined for other derived test studies
-   * to modify the Rays
-   */
-  virtual void modifyRays();
-
-  const bool _vertex_to_vertex;
-  const bool _centroid_to_vertex;
-  const bool _centroid_to_centroid;
-  const bool _edge_to_edge;
-  const bool _side_aq;
-  const bool _centroid_aq;
-
-  /// Whether or not to compute the expected distance for generated rays
-  const bool _compute_expected_distance;
-
-  /// Polar angular quadrature order for aq tests
-  const unsigned int _polar_quad_order;
-  /// Azimuthal angular quadrature order for aq tests
-  const unsigned int _azimuthal_quad_order;
-
-  const bool _use_unsized_rays;
-  const bool _set_incoming_side;
 
   const RayDataIndex _energy_density_index;
 
@@ -73,10 +34,23 @@ protected:
 
   const RayDataIndex _num_deposition_index;
 
-private:
-  /// The expected total distance Rays should travel
-  Real & _expected_distance;
+  // Laser power
+  const Real _power;
 
-  /// Helper for computing the end point for Rays that don't end within mesh
-  std::unique_ptr<BoundingBoxIntersectionHelper> _bbox_intersection_helper;
+  // Laser radius
+  const Real _Rb;
+
+  const Real _cut_off_r;
+
+  /// Number of rays in x, y direction
+  const unsigned int &_nx, &_ny;
+
+  /// The min/max values for rays domain
+  const Real &_xmin, &_xmax, &_ymin, &_ymax;
+
+  const Real _starting_height;
+
+  const Real _max_distance;
+
+private:
 };
