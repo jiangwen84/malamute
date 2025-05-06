@@ -97,7 +97,7 @@ LaserRayStudy::defineRays()
         energy_rays.push_back(energy);
       }
     }
-
+    
     std::cout << "number of rays = " << num_rays << std::endl;
 
     for (std::size_t i = 0; i < names.size(); ++i)
@@ -117,7 +117,7 @@ LaserRayStudy::defineRays()
 
       ray->data(_energy_density_index) = energy_rays[i];
 
-      ray->setStartingMaxDistance(0.002);
+      ray->setStartingMaxDistance(_max_distance);
 
       _rays.emplace_back(std::move(ray));
     }
@@ -203,7 +203,7 @@ LaserRayStudy::defineRays()
 
       ray->data(_energy_density_index) = energy_rays[i];
 
-      ray->setStartingMaxDistance(0.002);
+      ray->setStartingMaxDistance(_max_distance);
 
       _rays.emplace_back(std::move(ray));
     }

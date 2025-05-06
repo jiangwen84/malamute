@@ -52,7 +52,12 @@ MeltPoolHeatSource::MeltPoolHeatSource(const InputParameters & parameters)
     _melt_pool_mass_rate(getADMaterialProperty<Real>("melt_pool_mass_rate")),
     _Lv(getParam<Real>("vaporization_latent_heat")),
     _use_ray_laser(isCoupled("laser_deposition")),
-    _laser_deposition(_use_ray_laser ? coupledValue("laser_deposition") : _zero)
+    _laser_deposition(_use_ray_laser ? coupledValue("laser_deposition") : _zero),
+    _vpp_name(getParam<VectorPostprocessorName>("deposition_coord")),
+    _x(getVectorPostprocessorValue("deposition_coord", "x")),
+    _y(getVectorPostprocessorValue("deposition_coord", "y")),
+    _z(getVectorPostprocessorValue("deposition_coord", "z")),
+    _energy(getVectorPostprocessorValue("deposition_coord", "energy"))
 {
 }
 
@@ -70,9 +75,20 @@ MeltPoolHeatSource::precomputeQpResidual()
   if (_use_ray_laser)
     laser_source = _laser_deposition[_qp] / _current_elem->volume();
   else
-    laser_source = 2 * _power.value(_t, p) * _alpha / (libMesh::pi * Utility::pow<2>(_Rb)) *
+    for (int i = 0; i < _x.size(); i++){
+      RealVectorValue deposition_coord(_x[i], _y[i], _q_point[_qp](2));
+      Real r = (deposition_coord - _q_point[_qp]).norm();
+      Real Q = _energy[i];
+      //auto Pij = (1 / (2 * libMesh::pi * std::pow(_beta, 2))) * std::exp(-(0.5) * Utility::pow<2>(r / _beta));
+      auto Pij = 2 * _power.value(_t, p) * _alpha / (libMesh::pi * Utility::pow<2>(_Rb)) *
+                std::exp(-2.0 * Utility::pow<2>(r / _Rb));
+      
+      laser_source += Q * Pij;
+    }
+    /**
+     * laser_source = 2 * _power.value(_t, p) * _alpha / (libMesh::pi * Utility::pow<2>(_Rb)) *
                    std::exp(-2.0 * Utility::pow<2>(r / _Rb));
-
+     */
   ADReal convection = _Ah * (_u[_qp] - _T0);
   ADReal radiation =
       -_stefan_boltzmann * _varepsilon * (Utility::pow<4>(_u[_qp]) - Utility::pow<4>(_T0));

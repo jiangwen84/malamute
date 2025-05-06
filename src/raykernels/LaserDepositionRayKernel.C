@@ -16,12 +16,12 @@ LaserDepositionRayKernel::validParams()
 {
   auto params = AuxRayKernel::validParams();
   params.addRequiredCoupledVar("phase", "The field variable that contains the phase");
-
+  params.addRequiredParam<Real>("epsilon", "The material constant associated the material's electrical conductance");
   return params;
 }
 
 LaserDepositionRayKernel::LaserDepositionRayKernel(const InputParameters & params)
-  : AuxRayKernel(params), _phase(coupledValue("phase")), _grad_phase(coupledGradient("phase"))
+  : AuxRayKernel(params), _phase(coupledValue("phase")), _grad_phase(coupledGradient("phase")),_epsilon(getParam<Real>("epsilon"))
 {
 }
 
@@ -36,13 +36,39 @@ LaserDepositionRayKernel::onSegment()
 
   if (currentRay()->trajectoryChanged())
   {
+    
+    // Compute α (alpha), an angular modulation factor influenced by anisotropy ε and angle θ.
+    // Formula:
+    // α = 1 - 0.5 * [ (1 + (1 - ε·cosθ)²) / (1 + (1 + ε·cosθ)²) + 
+    //                 (ε² - 2ε·cosθ + 2cos²θ) / (ε² + 2ε·cosθ + 2cos²θ) ]
+
     const auto phase_normal = _grad_phase[0].unit();
+    const auto original_direction = currentRay()->direction();
 
+    auto dot_prod = phase_normal * original_direction;
+    auto phase_normal_norm = phase_normal.norm();
+    auto original_direction_norm = original_direction.norm();
+
+    auto _theta = std::acos(-dot_prod / (phase_normal_norm * original_direction_norm));
+
+    auto epsilonTimesCosTheta = _epsilon * std::cos(_theta);
+
+    auto numerator1 = 1 + std::pow(1 - epsilonTimesCosTheta, 2);
+    auto denominator1 = 1 + std::pow(1 + epsilonTimesCosTheta, 2);
+    auto numerator2 = std::pow(_epsilon, 2) - 2 * epsilonTimesCosTheta + 2 * std::pow(std::cos(_theta), 2);
+    auto denominator2 = std::pow(_epsilon, 2) + 2 * epsilonTimesCosTheta + 2 * std::pow(std::cos(_theta), 2);
+    auto _alpha = 1 - 0.5 * ((numerator1 / denominator1) + (numerator2 / denominator2));
+
+    // Energy carried from previous reflection
     auto energy = currentRay()->data(currentRay()->study().getRayDataIndex("energy_density"));
+    // Absorbed energy
+    auto absorbed_energy = _alpha*energy;
+    // Reflected energy
+    auto reflected_energy = (1 - _alpha)*energy;
 
-    addValue(energy);
+    addValue(absorbed_energy);
 
-    currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = 0.5 * energy;
+    currentRay()->data(currentRay()->study().getRayDataIndex("energy_density")) = reflected_energy;
     currentRay()->data(currentRay()->study().getRayDataIndex("num_reflection")) += 1;
     currentRay()->data(currentRay()->study().getRayDataIndex("num_deposition")) += 1;
   }

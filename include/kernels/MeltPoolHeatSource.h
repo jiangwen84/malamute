@@ -11,6 +11,8 @@
 
 #include "ADKernelValue.h"
 
+#include "EnergyDepositionPostprocessor.h"
+
 /**
  * This class computes the laser heat source and heat loss in the melt pool heat equation.
  */
@@ -67,4 +69,18 @@ protected:
 
   /// The coupled laser deposition values
   const VariableValue & _laser_deposition;
+   
+  VectorPostprocessorName _vpp_name;
+
+  /// Energy deposition x coordinate
+  const VectorPostprocessorValue & _x;
+
+  /// Energy deposition y coordinate
+  const VectorPostprocessorValue & _y;
+
+  /// Energy deposition z coordinate
+  const VectorPostprocessorValue & _z;
+
+  /// Energy deposition value
+  const VectorPostprocessorValue & _energy;
 };

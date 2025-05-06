@@ -28,4 +28,6 @@ protected:
   const VariableValue & _phase;
   /// The gradient of the field variable that contains the phase
   const VariableGradient & _grad_phase;
+  /// The material constant that contains the electrical conductance behavior of the material
+  const Real _epsilon;
 };
