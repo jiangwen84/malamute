@@ -68,7 +68,7 @@
         variable = deposition
         depends_on = refraction
         phase = ls
-        epsilon = 0.01
+        epsilon = 1.0
     []
     [deposition_number]
         type = LaserDepositionNumberRayKernel
@@ -97,7 +97,7 @@
     cutoff_radius = 0.1e-3
     xmin = 2.0
     xmax = 3.0
-    nx = 10
+    nx = 20
 
     starting_height = 4
     max_distance = 10

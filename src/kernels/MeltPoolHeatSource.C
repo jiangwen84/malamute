@@ -79,10 +79,8 @@ MeltPoolHeatSource::precomputeQpResidual()
       RealVectorValue deposition_coord(_x[i], _y[i], _q_point[_qp](2));
       Real r = (deposition_coord - _q_point[_qp]).norm();
       Real Q = _energy[i];
-      //auto Pij = (1 / (2 * libMesh::pi * std::pow(_beta, 2))) * std::exp(-(0.5) * Utility::pow<2>(r / _beta));
       auto Pij = 2 * _power.value(_t, p) * _alpha / (libMesh::pi * Utility::pow<2>(_Rb)) *
                 std::exp(-2.0 * Utility::pow<2>(r / _Rb));
-      
       laser_source += Q * Pij;
     }
     /**

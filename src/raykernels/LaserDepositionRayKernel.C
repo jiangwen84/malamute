@@ -48,8 +48,8 @@ LaserDepositionRayKernel::onSegment()
     auto dot_prod = phase_normal * original_direction;
     auto phase_normal_norm = phase_normal.norm();
     auto original_direction_norm = original_direction.norm();
-
-    auto _theta = std::acos(-dot_prod / (phase_normal_norm * original_direction_norm));
+    auto _theta = std::acos(dot_prod / (phase_normal_norm * original_direction_norm));
+    auto _theta_d = _theta*(180/3.141592);
 
     auto epsilonTimesCosTheta = _epsilon * std::cos(_theta);
 
