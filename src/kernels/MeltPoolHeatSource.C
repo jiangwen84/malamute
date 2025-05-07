@@ -83,10 +83,7 @@ MeltPoolHeatSource::precomputeQpResidual()
                 std::exp(-2.0 * Utility::pow<2>(r / _Rb));
       laser_source += Q * Pij;
     }
-    /**
-     * laser_source = 2 * _power.value(_t, p) * _alpha / (libMesh::pi * Utility::pow<2>(_Rb)) *
-                   std::exp(-2.0 * Utility::pow<2>(r / _Rb));
-     */
+
   ADReal convection = _Ah * (_u[_qp] - _T0);
   ADReal radiation =
       -_stefan_boltzmann * _varepsilon * (Utility::pow<4>(_u[_qp]) - Utility::pow<4>(_T0));
